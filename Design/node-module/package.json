@@ -1,0 +1,14 @@
+{
+  "name": "rate-limiter-design",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Convert the rate-limiter design Markdown docs (with Mermaid diagrams) to PDF.",
+  "scripts": {
+    "pdf": "node md2pdf.js"
+  },
+  "dependencies": {
+    "marked": "4.3.0",
+    "mermaid": "9.4.3",
+    "puppeteer": "19.11.1"
+  }
+}

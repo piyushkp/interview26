@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^mkdir -p rate-limiter && mv distributed-rate-limiter\\.md rate-limiter-cheatsheet\\.md rate-limiter/ && ls -la rate-limiter$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
