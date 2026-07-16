@@ -11,10 +11,12 @@ module lives in its own file in this package:
   - credit_ledger          - GPU credit ledger with out-of-order timestamps.
   - map_serializer         - length-prefixed, binary-safe map serialization.
   - sharded_kv_store       - persistent sharded KV store with replay restore.
-  - gpu_credit_ledger      - idempotent GPU credit ledger (non-negative balances).
+  - gpu_credit_ledger      - idempotent GPU credit ledger (non-negative
+                             balances).
 
 Output is Python-native (True/False, quoted strings in lists, dict/bytes repr),
-so it differs cosmetically from the Java driver's output (true/false, unquoted).
+so it differs cosmetically from the Java driver's output
+(true/false, unquoted).
 """
 
 from chat_event_counter import ChatEventCounter
@@ -51,7 +53,8 @@ def main():
     # --- Module 2: Plant Infection Time (multi-source BFS) ---
     print(infection_time([[2, 1, 1], [1, 1, 0], [0, 1, 1]]))     # 4
     print(infection_time([[2, 1, -1], [-1, 1, 1], [1, -1, 1]]))  # -1
-    print(infection_time([[0, 2, 0]]))                           # 0 (no healthy plants)
+    # -> 0 (no healthy plants)
+    print(infection_time([[0, 2, 0]]))
 
     # --- Module 3: IPv4 / IPv6 addressing toolkit ---
     # Part 1: validate & parse IPv4
@@ -75,7 +78,8 @@ def main():
     # --- Module 4: Labeling schedule generation ---
     # Part 1: any valid schedule
     print(any_schedule(3, 1, 2, 2))
-    # [['t1', 'm1', 'h1'], ['t2', 'm1', 'h1'], ['t2', 'm1', 'h2'], ['t3', 'm1', 'h2']]
+    # [['t1', 'm1', 'h1'], ['t2', 'm1', 'h1'], ['t2', 'm1', 'h2'],
+    #  ['t3', 'm1', 'h2']]
     print(any_schedule(1, 1, 1, 1))  # [['t1', 'm1', 'h1']]
     # Part 2: prefix-balanced schedule
     print(prefix_balanced_schedule(3, 2, 4, 2))
@@ -111,13 +115,16 @@ def main():
         ["put", "a", "1"], ["get", "a"], ["serialize", "snap1"],
         ["put", "a", "2"], ["deserialize", "snap1"], ["get", "a"],
     ]
-    print(PersistentKvStore.py_repr(PersistentKvStore.simulate_part1(kv1)))  # ['1', '1']
+    # -> ['1', '1']
+    print(PersistentKvStore.py_repr(PersistentKvStore.simulate_part1(kv1)))
     # Part 1: binary-safe with delimiter-like bytes in key/value
     kv1b = [
-        ["put", by("a|b"), by("v:1")], ["serialize", "p"], ["delete", by("a|b")],
+        ["put", by("a|b"), by("v:1")], ["serialize", "p"],
+        ["delete", by("a|b")],
         ["get", by("a|b")], ["deserialize", "p"], ["get", by("a|b")],
     ]
-    print(PersistentKvStore.py_repr(PersistentKvStore.simulate_part1(kv1b)))  # [None, b'v:1']
+    # -> [None, b'v:1']
+    print(PersistentKvStore.py_repr(PersistentKvStore.simulate_part1(kv1b)))
 
     # Part 2: snapshot split across size-bounded segments
     kv2 = [
@@ -133,7 +140,8 @@ def main():
         ["reorder", "snap", [2, 0, 1]], ["delete", by("aa")],
         ["deserialize", "snap"], ["get", by("aa")], ["get", by("bb")],
     ]
-    print(PersistentKvStore.py_repr(PersistentKvStore.simulate_part2(20, kv2b)))
+    print(PersistentKvStore.py_repr(
+        PersistentKvStore.simulate_part2(20, kv2b)))
     # [3, b'xx', b'yy']
 
     # Part 3: snapshot + append-only log with replay and compaction
@@ -162,14 +170,17 @@ def main():
 
     # --- Module 9: Credit ledger with out-of-order timestamps ---
     led1 = [
-        ["GRANT", "alice", 10, 5], ["CHARGE", "alice", 4, 7], ["GET", "alice", 7],
+        ["GRANT", "alice", 10, 5], ["CHARGE", "alice", 4, 7],
+        ["GET", "alice", 7],
         ["CHARGE", "alice", 10, 6], ["GET", "alice", 7],
     ]
     print(CreditLedger.simulate(led1))  # [6, 0]
 
     led2 = [
-        ["GRANT", "alice", 5, 10], ["GRANT", "bob", 7, 1], ["CHARGE", "bob", 2, 3],
-        ["GET", "bob", 2], ["GET", "bob", 3], ["GET", "alice", 9], ["GET", "alice", 10],
+        ["GRANT", "alice", 5, 10], ["GRANT", "bob", 7, 1],
+        ["CHARGE", "bob", 2, 3],
+        ["GET", "bob", 2], ["GET", "bob", 3], ["GET", "alice", 9],
+        ["GET", "alice", 10],
     ]
     print(CreditLedger.simulate(led2))  # [7, 5, 0, 5]
 
@@ -183,22 +194,27 @@ def main():
 
     # --- Module 11: Persistent sharded KV store ---
     shard1 = [
-        ["put", "a", "1"], ["put", "b", "22"], ["get", "a"], ["put", "a", "333"],
+        ["put", "a", "1"], ["put", "b", "22"], ["get", "a"],
+        ["put", "a", "333"],
         ["get", "a"], ["restore"], ["get", "b"],
     ]
     print(ShardedKvStore.py_repr(ShardedKvStore.simulate(10, shard1)))
     # (['1', '333', '22'], ['P|a|1;', 'P|b|22;', 'P|a|333;'])
     shard2 = [
-        ["put", "ab", "x"], ["put", "c", "yz"], ["delete", "ab"], ["get", "ab"],
+        ["put", "ab", "x"], ["put", "c", "yz"], ["delete", "ab"],
+        ["get", "ab"],
         ["restore"], ["get", "c"], ["get", "ab"],
     ]
     print(ShardedKvStore.py_repr(ShardedKvStore.simulate(20, shard2)))
     # ([None, 'yz', None], ['P|ab|x;P|c|yz;D|ab;'])
 
     # --- Module 12: Idempotent GPU credit ledger (non-negative balances) ---
-    led_init1 = [["e1", "tenantA", 10], ["e2", "tenantA", -3], ["e3", "tenantB", 5]]
+    led_init1 = [
+        ["e1", "tenantA", 10], ["e2", "tenantA", -3], ["e3", "tenantB", 5],
+    ]
     led_ops1 = [
-        ["get", "tenantA"], ["get", "tenantB"], ["apply", ["e4", "tenantA", 2]],
+        ["get", "tenantA"], ["get", "tenantB"],
+        ["apply", ["e4", "tenantA", 2]],
         ["apply", ["e5", "tenantB", -6]], ["get", "tenantB"],
         ["apply", ["e6", "tenantA", -4]], ["get", "tenantB"],
     ]
@@ -206,7 +222,8 @@ def main():
     # [7, 5, True, False, 5, True, 5]
     led_ops2 = [
         ["get", "ghost"], ["apply", ["x1", "ghost", -3]], ["get", "ghost"],
-        ["apply", ["x1", "ghost", -3]], ["apply", ["x2", "ghost", 4]], ["get", "ghost"],
+        ["apply", ["x1", "ghost", -3]], ["apply", ["x2", "ghost", 4]],
+        ["get", "ghost"],
     ]
     print(GpuCreditLedger.solution([], led_ops2))
     # [0, False, 0, False, True, 4]

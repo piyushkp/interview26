@@ -10,13 +10,13 @@ from collections import deque
 
 
 # Approach (in plain terms):
-#   Picture every infected plant as a small fire that all start spreading at the
-#   same moment. Each minute, every fire jumps to the healthy plants directly
-#   next to it (up, down, left, right). We flood outward one ring at a time and
-#   count the minutes as we go, stopping once no healthy plant can catch fire.
-#   If every healthy plant was reached, the answer is the minutes it took; if a
-#   plant is walled off and can never be reached, we return -1; and if there were
-#   no healthy plants to begin with, it takes 0 minutes.
+#   Picture every infected plant as a small fire that all start spreading at
+#   the same moment. Each minute, every fire jumps to the healthy plants
+#   directly next to it (up, down, left, right). We flood outward one ring at a
+#   time and count the minutes as we go, stopping once no healthy plant can
+#   catch fire. If every healthy plant was reached, the answer is the minutes
+#   it took; if a plant is walled off and can never be reached, we return -1;
+#   and if there were no healthy plants to begin with, it takes 0 minutes.
 def infection_time(grid):
     """Minutes until every healthy plant is infected via multi-source BFS,
     -1 if some healthy plant is unreachable, or 0 if none need infecting."""

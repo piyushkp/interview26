@@ -14,22 +14,26 @@ process_commands returns one output string per GET and SELECT, in order.
 
 
 def _select_sort_key(order_value_and_row_key):
-    """Sort key for SELECT: the (order_by value, row_key) pair, both ascending."""
-    # Time: O(1), Space: O(1) - returns the decorated pair unchanged as the key.
+    """Sort key for SELECT: the (order_by value, row_key) pair, both
+    ascending."""
+    # Time: O(1), Space: O(1) - returns the decorated pair unchanged as
+    # the key.
     return order_value_and_row_key
 
 
 # Approach (in plain terms):
-#   Picture a spreadsheet where every row has a name (row_key) and some labelled
-#   boxes (columns) holding text. We store it as a dictionary of rows, where each
-#   row is itself a small dictionary of column -> value.
-#     - SET writes into a box, creating the row if it's new or overwriting what was
-#       already there.
-#     - GET reads one box, answering "NULL" when that row or box was never filled.
-#     - SELECT means "give me every row whose column X equals Y", then line those
-#       rows up sorted by another column's value (ties broken by the row's name).
-#   To sort safely we first pair each matching row with the value we sort on, sort
-#   those pairs, then read the names back out in order.
+#   Picture a spreadsheet where every row has a name (row_key) and some
+#   labelled boxes (columns) holding text. We store it as a dictionary of rows,
+#   where each row is itself a small dictionary of column -> value.
+#     - SET writes into a box, creating the row if it's new or overwriting what
+#       was already there.
+#     - GET reads one box, answering "NULL" when that row or box was never
+#       filled.
+#     - SELECT means "give me every row whose column X equals Y", then line
+#       those rows up sorted by another column's value (ties broken by the
+#       row's name).
+#   To sort safely we first pair each matching row with the value we sort on,
+#   sort those pairs, then read the names back out in order.
 class InMemoryTable:
 
     def __init__(self):
@@ -40,8 +44,8 @@ class InMemoryTable:
 
     def set(self, row_key, col_key, value):
         """SET: set or overwrite a cell."""
-        # Time: O(1) average, Space: O(1) - one dict insert (plus a new row dict
-        # the first time a row_key is seen).
+        # Time: O(1) average, Space: O(1) - one dict insert (plus a new row
+        # dict the first time a row_key is seen).
         self._table.setdefault(row_key, {})[col_key] = value
 
     def get(self, row_key, col_key):
@@ -55,7 +59,8 @@ class InMemoryTable:
 
     def select(self, where_col, where_value, order_by_col):
         """SELECT: matching row_keys sorted by order_by_col then row_key."""
-        # n = number of rows in the table, k = number of matching rows (k <= n).
+        # n = number of rows in the table, k = number of matching rows
+        # (k <= n).
         # Time:  O(n + k log k) - scan all n rows, then sort the k matches.
         # Space: O(k) - the list of decorated matches.
         # Pair every matching row with the value we will sort it by.
@@ -82,7 +87,8 @@ class InMemoryTable:
     def process_commands(commands):
         """Process commands, returning one output per GET/SELECT in order."""
         # m = number of commands, n = rows in the table.
-        # Time:  O(m * n log n) worst case (each SELECT scans and sorts the rows).
+        # Time:  O(m * n log n) worst case (each SELECT scans and sorts the
+        #        rows).
         # Space: O(m + n) - the outputs list plus the stored rows.
         db = InMemoryTable()
         outputs = []
@@ -100,7 +106,8 @@ class InMemoryTable:
 
 
 if __name__ == "__main__":
-    # Test 1: GET a cell, then SELECT ordered by a numeric-looking string column.
+    # Test 1: GET a cell, then SELECT ordered by a numeric-looking string
+    # column.
     sql1 = [
         "SET r1 name bob", "SET r1 age 2", "SET r2 name bob", "SET r2 age 10",
         "GET r1 name", "SELECT name bob age",
@@ -118,7 +125,8 @@ if __name__ == "__main__":
     over = ["SET r1 v a", "SET r1 v b", "GET r1 v"]
     print(InMemoryTable.process_commands(over))  # ['b']
 
-    # Test 5: GET a column the row never set -> NULL (row exists, cell does not).
+    # Test 5: GET a column the row never set -> NULL (row exists, cell does
+    # not).
     absent = ["SET r1 name x", "GET r1 age"]
     print(InMemoryTable.process_commands(absent))  # ['NULL']
 

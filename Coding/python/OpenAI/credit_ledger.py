@@ -7,9 +7,11 @@ that was already returned.
 Request forms:
     ["GRANT",  user, amount, timestamp]  add amount at timestamp
     ["CHARGE", user, amount, timestamp]  subtract amount IF the running balance
-                                         at that moment is >= amount, else ignore
-    ["GET",    user, timestamp]          balance considering only arrived events
-                                         with timestamp <= the query timestamp
+                                         at that moment is >= amount, else
+                                         ignore
+    ["GET",    user, timestamp]          balance considering only arrived
+                                         events with timestamp <= the query
+                                         timestamp
 
 Within a user, events are applied in (timestamp, arrival-order) order — a
 stable tie-breaker for equal timestamps. Each GET replays that user's eligible
@@ -25,7 +27,8 @@ class _Event:
         self.is_grant = is_grant
         self.amount = amount
         self.timestamp = timestamp
-        self.arrival = arrival  # index in the input stream -> stable tie-breaker
+        # index in the input stream -> stable tie-breaker
+        self.arrival = arrival
 
 
 def _event_order(event):
@@ -39,12 +42,13 @@ def _event_order(event):
 #   Imagine each user has a shoebox where we drop in slips of paper as they
 #   arrive: "+10 credits at time 5" or "-4 credits at time 7". Slips can be
 #   dropped in any order and can even be back-dated.
-#   When someone asks "what's the balance at time t?", we pull out only the slips
-#   dated at or before t, lay them out in date order (using arrival order to
-#   break ties), and add them up starting from zero. A "-" slip only counts if
-#   there is enough money at that moment; otherwise we skip it. Because we
+#   When someone asks "what's the balance at time t?", we pull out only the
+#   slips dated at or before t, lay them out in date order (using arrival order
+#   to break ties), and add them up starting from zero. A "-" slip only counts
+#   if there is enough money at that moment; otherwise we skip it. Because we
 #   recompute from scratch every time, a slip that shows up late but is
-#   back-dated changes future answers without rewriting answers we already gave.
+#   back-dated changes future answers without
+#   rewriting answers we already gave.
 class CreditLedger:
 
     def __init__(self):
@@ -54,18 +58,25 @@ class CreditLedger:
 
     def grant(self, user, amount, timestamp, arrival):
         """Record a GRANT for user."""
-        # Time: O(1) amortized (dict lookup + list append), Space: O(1) per call.
-        self._ledger.setdefault(user, []).append(_Event(True, amount, timestamp, arrival))
+        # Time: O(1) amortized (dict lookup + list append),
+        # Space: O(1) per call.
+        self._ledger.setdefault(user, []).append(
+            _Event(True, amount, timestamp, arrival))
 
     def charge(self, user, amount, timestamp, arrival):
-        """Record a CHARGE for user (success is decided later, at replay time)."""
-        # Time: O(1) amortized (dict lookup + list append), Space: O(1) per call.
-        self._ledger.setdefault(user, []).append(_Event(False, amount, timestamp, arrival))
+        """Record a CHARGE for user (success is decided later, at replay
+        time)."""
+        # Time: O(1) amortized (dict lookup + list append),
+        # Space: O(1) per call.
+        self._ledger.setdefault(user, []).append(
+            _Event(False, amount, timestamp, arrival))
 
     def get(self, user, timestamp):
-        """Balance for user at timestamp, replaying eligible events in order."""
+        """Balance for user at timestamp, replaying eligible events in
+        order."""
         # n = events stored for this user, k = eligible events (k <= n).
-        # Time:  O(n + k log k) - scan all n events, then sort the k eligible ones.
+        # Time:  O(n + k log k) - scan all n events, then sort the k
+        #        eligible ones.
         # Space: O(k) - the list of eligible events.
         events = self._ledger.get(user)
         if events is None:
@@ -110,15 +121,18 @@ class CreditLedger:
 if __name__ == "__main__":
     # Test 1: a charge applied, then a back-dated charge drains the balance.
     led1 = [
-        ["GRANT", "alice", 10, 5], ["CHARGE", "alice", 4, 7], ["GET", "alice", 7],
+        ["GRANT", "alice", 10, 5], ["CHARGE", "alice", 4, 7],
+        ["GET", "alice", 7],
         ["CHARGE", "alice", 10, 6], ["GET", "alice", 7],
     ]
     print(CreditLedger.simulate(led1))  # [6, 0]
 
     # Test 2: two users kept independent; GET honors timestamp <= query time.
     led2 = [
-        ["GRANT", "alice", 5, 10], ["GRANT", "bob", 7, 1], ["CHARGE", "bob", 2, 3],
-        ["GET", "bob", 2], ["GET", "bob", 3], ["GET", "alice", 9], ["GET", "alice", 10],
+        ["GRANT", "alice", 5, 10], ["GRANT", "bob", 7, 1],
+        ["CHARGE", "bob", 2, 3],
+        ["GET", "bob", 2], ["GET", "bob", 3],
+        ["GET", "alice", 9], ["GET", "alice", 10],
     ]
     print(CreditLedger.simulate(led2))  # [7, 5, 0, 5]
 
@@ -134,18 +148,21 @@ if __name__ == "__main__":
 
     # Test 5: an unaffordable CHARGE is ignored, balance unchanged.
     led5 = [
-        ["GRANT", "u", 3, 1], ["CHARGE", "u", 5, 2], ["GET", "u", 2], ["GET", "u", 5],
+        ["GRANT", "u", 3, 1], ["CHARGE", "u", 5, 2],
+        ["GET", "u", 2], ["GET", "u", 5],
     ]
     print(CreditLedger.simulate(led5))  # [3, 3]
 
-    # Test 6: a late, back-dated GRANT changes future GETs but not past answers.
+    # Test 6: a late, back-dated GRANT changes future GETs but not past
+    # answers.
     led6 = [
         ["GRANT", "u", 10, 10], ["GET", "u", 10], ["GRANT", "u", 5, 3],
         ["GET", "u", 10], ["GET", "u", 5],
     ]
     print(CreditLedger.simulate(led6))  # [10, 15, 5]
 
-    # Test 7: equal timestamps use arrival order - CHARGE before GRANT is skipped.
+    # Test 7: equal timestamps use arrival order - CHARGE before GRANT is
+    # skipped.
     led7 = [
         ["CHARGE", "u", 5, 5], ["GRANT", "u", 10, 5], ["GET", "u", 5],
     ]

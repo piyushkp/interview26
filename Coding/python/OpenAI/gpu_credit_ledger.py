@@ -16,12 +16,13 @@ processed event_id's first result.
 # Approach (in plain terms):
 #   Think of one prepaid wallet per tenant. Each event is a receipt with a
 #   unique ID saying "add or subtract this much for this tenant".
-#     - Unknown tenants start at 0, and a wallet is never allowed to go negative:
-#       if a charge is too big we reject it and leave the wallet untouched.
+#     - Unknown tenants start at 0, and a wallet is never allowed to go
+#       negative: if a charge is too big we reject it and leave the wallet
+#       untouched.
 #     - To stay idempotent we keep a notebook of every receipt ID we've already
 #       handled and the yes/no answer we gave. If the same ID shows up again we
-#       simply repeat that answer and change nothing - like ignoring a duplicate
-#       payment-confirmation email.
+#       simply repeat that answer and change nothing - like ignoring a
+#       duplicate payment-confirmation email.
 class GpuCreditLedger:
 
     def __init__(self):
@@ -82,18 +83,24 @@ class GpuCreditLedger:
 
 if __name__ == "__main__":
     # Test 1: init then mixed get/apply, including a rejected overdraft.
-    init1 = [["e1", "tenantA", 10], ["e2", "tenantA", -3], ["e3", "tenantB", 5]]
+    init1 = [
+        ["e1", "tenantA", 10], ["e2", "tenantA", -3], ["e3", "tenantB", 5],
+    ]
     ops1 = [
-        ["get", "tenantA"], ["get", "tenantB"], ["apply", ["e4", "tenantA", 2]],
+        ["get", "tenantA"], ["get", "tenantB"],
+        ["apply", ["e4", "tenantA", 2]],
         ["apply", ["e5", "tenantB", -6]], ["get", "tenantB"],
         ["apply", ["e6", "tenantA", -4]], ["get", "tenantB"],
     ]
-    print(GpuCreditLedger.solution(init1, ops1))  # [7, 5, True, False, 5, True, 5]
+    # -> [7, 5, True, False, 5, True, 5]
+    print(GpuCreditLedger.solution(init1, ops1))
 
-    # Test 2: unknown tenant starts at 0; duplicate event_id repeats first result.
+    # Test 2: unknown tenant starts at 0; duplicate event_id repeats first
+    # result.
     ops2 = [
         ["get", "ghost"], ["apply", ["x1", "ghost", -3]], ["get", "ghost"],
-        ["apply", ["x1", "ghost", -3]], ["apply", ["x2", "ghost", 4]], ["get", "ghost"],
+        ["apply", ["x1", "ghost", -3]], ["apply", ["x2", "ghost", 4]],
+        ["get", "ghost"],
     ]
     print(GpuCreditLedger.solution([], ops2))  # [0, False, 0, False, True, 4]
 

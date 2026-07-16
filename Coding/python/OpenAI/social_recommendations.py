@@ -17,13 +17,13 @@ def _candidate_rank(item):
 
 # Approach (in plain terms):
 #   Picture everyone's "following" list as a page in an address book naming who
-#   they follow. To suggest new people for someone, we use "friends of friends":
-#   look at each person they already follow, then look at who THOSE people
-#   follow. Every time one of your follows points at the same stranger, that
-#   stranger earns a point - more shared connections means a better suggestion.
-#   We skip yourself and anyone you already follow. Finally we hand back the top
-#   k strangers, most points first, breaking ties by the smaller id so the
-#   answer is always predictable.
+#   they follow. To suggest new people for someone, we use "friends of
+#   friends": look at each person they already follow, then look at who THOSE
+#   people follow. Every time one of your follows points at the same stranger,
+#   that stranger earns a point - more shared connections means a better
+#   suggestion. We skip yourself and anyone you already follow. Finally we hand
+#   back the top k strangers, most points first, breaking ties by the smaller
+#   id so the answer is always predictable.
 class SocialRecommendations:
 
     def __init__(self):
@@ -32,8 +32,8 @@ class SocialRecommendations:
         self._following = {}
 
     def follow(self, follower_id, followee_id):
-        """Add a directed edge follower -> followee. Self-follows and duplicates
-        are ignored."""
+        """Add a directed edge follower -> followee. Self-follows and
+        duplicates are ignored."""
         # Time: O(1) average - a dict lookup plus a set add.
         # Space: O(1) amortized - may store one new followee.
         if follower_id == followee_id:
@@ -42,7 +42,8 @@ class SocialRecommendations:
         self._following.setdefault(follower_id, set()).add(followee_id)
 
     def unfollow(self, follower_id, followee_id):
-        """Remove the edge follower -> followee if present; otherwise a no-op."""
+        """Remove the edge follower -> followee if present; otherwise a
+        no-op."""
         # Time: O(1) average - a dict lookup plus a set discard. Space: O(1).
         followees = self._following.get(follower_id)
         if followees is not None:
@@ -59,7 +60,8 @@ class SocialRecommendations:
         smaller user_id first."""
         # d = users user_id follows, E = total second-hop edges scanned,
         # c = number of distinct candidates found (c <= E).
-        # Time:  O(E + c log c) - scan every second-hop edge, then sort candidates.
+        # Time:  O(E + c log c) - scan every second-hop edge, then sort
+        #        candidates.
         # Space: O(c) - the score map and the ranked list of candidates.
         result = []
         if k <= 0:
@@ -95,11 +97,13 @@ class SocialRecommendations:
 
     @staticmethod
     def process_queries(queries):
-        """Process queries in order, returning the result of every recommend."""
+        """Process queries in order, returning the result of every
+        recommend."""
         # q = number of queries; each recommend costs up to O(E + c log c)
         # (see recommend), while follow/unfollow are O(1) average.
         # Time:  O(q * (E + c log c)) worst case.
-        # Space: O(V + total_edges + q) - the stored graph plus the answers list.
+        # Space: O(V + total_edges + q) - the stored graph plus the answers
+        #        list.
         network = SocialRecommendations()
         answers = []
         for query in queries:
@@ -116,14 +120,16 @@ class SocialRecommendations:
 
 
 if __name__ == "__main__":
-    # Test 1: user 1 -> {2,3}; 4 is reached by both 2 and 3 (score 2) so ranks first.
+    # Test 1: user 1 -> {2,3}; 4 is reached by both 2 and 3 (score 2) so ranks
+    # first.
     ex1 = [
         ["follow", 1, 2], ["follow", 1, 3], ["follow", 2, 4], ["follow", 3, 4],
         ["follow", 2, 5], ["follow", 3, 6], ["recommend", 1, 3],
     ]
     print(SocialRecommendations.process_queries(ex1))  # [[4, 5, 6]]
 
-    # Test 2: self-follows/duplicates ignored; unfollow empties 1's set -> no recs.
+    # Test 2: self-follows/duplicates ignored; unfollow empties 1's set -> no
+    # recs.
     ex2 = [
         ["follow", 1, 1], ["follow", 1, 2], ["follow", 1, 2], ["follow", 2, 1],
         ["follow", 2, 3], ["recommend", 1, 5], ["unfollow", 1, 4],
@@ -152,7 +158,8 @@ if __name__ == "__main__":
 
     # Test 6: a candidate you already follow is excluded from recommendations.
     ex6 = [
-        ["follow", 1, 2], ["follow", 1, 3], ["follow", 2, 3], ["recommend", 1, 5],
+        ["follow", 1, 2], ["follow", 1, 3],
+        ["follow", 2, 3], ["recommend", 1, 5],
     ]
     print(SocialRecommendations.process_queries(ex6))  # [[]]
 
@@ -165,7 +172,8 @@ if __name__ == "__main__":
 
     # Test 8: duplicate follows don't inflate a candidate's score.
     ex8 = [
-        ["follow", 1, 2], ["follow", 1, 2], ["follow", 2, 5], ["recommend", 1, 5],
+        ["follow", 1, 2], ["follow", 1, 2],
+        ["follow", 2, 5], ["recommend", 1, 5],
     ]
     print(SocialRecommendations.process_queries(ex8))  # [[5]]
 

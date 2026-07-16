@@ -9,18 +9,19 @@ No networking libraries are used - only manual parsing and arithmetic.
 
 
 # Approach (in plain terms):
-#   Treat an IP address like the number on a car's odometer. Each octet (or hex
-#   group) is one "wheel", and the whole address is just one big number written in
-#   separate pieces.
-#     - parse: read the dotted text and make sure every wheel holds a legal number.
-#     - adjacent: roll the odometer one click up or down; when a wheel passes its
-#       max it rolls over to 0 and nudges the wheel on its left (a carry), and the
-#       mirror image happens when rolling down (a borrow).
-#     - CIDR block: a "street" where every address shares the same leading bits;
-#       the prefix says how many leading bits are fixed, which pins down the first
-#       and last address on that street.
-#     - membership: check whether an address falls between that street's first and
-#       last address.
+#   Treat an IP address like the number on a car's odometer. Each octet (or
+#   hex group) is one "wheel", and the whole address is just one big number
+#   written in separate pieces.
+#     - parse: read the dotted text and make sure every wheel holds a legal
+#       number.
+#     - adjacent: roll the odometer one click up or down; when a wheel passes
+#       its max it rolls over to 0 and nudges the wheel on its left (a carry),
+#       and the mirror image happens when rolling down (a borrow).
+#     - CIDR block: a "street" where every address shares the same leading
+#       bits; the prefix says how many leading bits are fixed, which pins down
+#       the first and last address on that street.
+#     - membership: check whether an address falls between that street's first
+#       and last address.
 #   It is all plain integer and bit-mask math - no networking libraries.
 
 
@@ -28,7 +29,8 @@ No networking libraries are used - only manual parsing and arithmetic.
 def parse_ipv4(ip):
     """Parse a dotted-decimal IPv4 into 4 octets, or [] if invalid."""
     # n = length of the ip string.
-    # Time: O(n) - scans each character once while validating. Space: O(1) - 4 octets.
+    # Time:  O(n) - scans each character once while validating.
+    # Space: O(1) - 4 octets.
     octets = _to_octets(ip)
     if octets is None:
         return []  # invalid -> empty list
@@ -37,7 +39,8 @@ def parse_ipv4(ip):
 
 # ---------- Part 2: adjacent IPv4 ----------
 def adjacent_ipv4(ip, direction):
-    """The IPv4 one above ('up') or below ('down'); "" on invalid/over/underflow."""
+    """The IPv4 one above ('up') or below ('down'); "" on
+    invalid/over/underflow."""
     # n = length of the ip string.
     # Time: O(n) - one parse pass plus O(1) arithmetic. Space: O(1).
     octets = _to_octets(ip)
@@ -61,7 +64,8 @@ def adjacent_ipv4(ip, direction):
 def cidr_range(cidr):
     """Inclusive [first, last] addresses of A.B.C.D/P; [] if invalid."""
     # n = length of the cidr string.
-    # Time: O(n) - parse the address and prefix once, then O(1) math. Space: O(1).
+    # Time:  O(n) - parse the address and prefix once, then O(1) math.
+    # Space: O(1).
     first_last = _cidr_first_last(cidr)
     if first_last is None:
         return []
@@ -70,7 +74,8 @@ def cidr_range(cidr):
 
 # ---------- Part 4: membership in a CIDR block ----------
 def ip_in_cidr(ip, cidr):
-    """1 if ip is inside cidr (inclusive), 0 if not, -1 if either input is invalid."""
+    """1 if ip is inside cidr (inclusive), 0 if not, -1 if either input is
+    invalid."""
     # n = combined length of the ip and cidr strings.
     # Time: O(n) - parse both inputs once, then O(1) comparisons. Space: O(1).
     octets = _to_octets(ip)
@@ -87,7 +92,8 @@ def adjacent_ipv6(ip, direction):
     lowercase 4-digit hex groups separated by '.'; "" on invalid input, invalid
     direction, or 128-bit over/underflow. Compressed '::' is NOT allowed."""
     # n = number of hex groups (always 8 when the input is valid).
-    # Time: O(n) - parse the groups, propagate one carry/borrow, format each group.
+    # Time:  O(n) - parse the groups, propagate one carry/borrow, then
+    #        format each group.
     # Space: O(n) - the list of 8 groups plus the hex pieces we join.
     groups = _to_groups(ip)
     if groups is None:
@@ -127,9 +133,11 @@ def adjacent_ipv6(ip, direction):
 # ---------- shared helpers ----------
 
 def _to_octets(ip):
-    """Validate and split a dotted-decimal IPv4 into 4 octets, or None if invalid."""
+    """Validate and split a dotted-decimal IPv4 into 4 octets, or None if
+    invalid."""
     # n = length of the ip string.
-    # Time: O(n) - split, then validate every character once. Space: O(1) - 4 octets.
+    # Time:  O(n) - split, then validate every character once.
+    # Space: O(1) - 4 octets.
     parts = _split_exact(ip, ".", 4)
     if parts is None:
         return None
@@ -143,7 +151,8 @@ def _to_octets(ip):
 
 
 def _parse_octet(s):
-    """Parse a decimal octet (digits only, leading zeros allowed, 0..255); -1 if invalid."""
+    """Parse a decimal octet (digits only, leading zeros allowed, 0..255);
+    -1 if invalid."""
     # n = number of characters in s (at most a handful).
     # Time: O(n) - one pass over the digits. Space: O(1).
     if not s:
@@ -161,7 +170,8 @@ def _parse_octet(s):
 def _cidr_first_last(cidr):
     """[first, last] of a CIDR block, or None if invalid."""
     # n = length of the cidr string.
-    # Time: O(n) - parse the address and prefix once, then O(1) bit math. Space: O(1).
+    # Time:  O(n) - parse the address and prefix once, then O(1) bit math.
+    # Space: O(1).
     parts = _split_exact(cidr, "/", 2)
     if parts is None:
         return None
@@ -179,7 +189,8 @@ def _cidr_first_last(cidr):
 
 
 def _parse_prefix(s):
-    """Parse a CIDR prefix length (digits only); -1 if not an integer in [0, 32]."""
+    """Parse a CIDR prefix length (digits only); -1 if not an integer in
+    [0, 32]."""
     # n = number of characters in s (at most a couple).
     # Time: O(n) - one pass over the digits. Space: O(1).
     if not s:
@@ -195,9 +206,11 @@ def _parse_prefix(s):
 
 
 def _to_groups(ip):
-    """Parse the 8 period-separated hex groups (1..4 hex digits each); None if invalid."""
+    """Parse the 8 period-separated hex groups (1..4 hex digits each); None
+    if invalid."""
     # n = length of the ip string.
-    # Time: O(n) - split, then validate every hex digit once. Space: O(1) - 8 groups.
+    # Time:  O(n) - split, then validate every hex digit once.
+    # Space: O(1) - 8 groups.
     parts = _split_exact(ip, ".", 8)
     if parts is None:
         return None
@@ -274,7 +287,8 @@ if __name__ == "__main__":
     print(parse_ipv4("192.168.0.1"))          # [192, 168, 0, 1]
     print(parse_ipv4("0.0.0.0"))              # [0, 0, 0, 0]
     print(parse_ipv4("255.255.255.255"))      # [255, 255, 255, 255]
-    print(parse_ipv4("010.0.0.1"))            # [10, 0, 0, 1]  (leading zeros allowed)
+    # -> [10, 0, 0, 1]  (leading zeros allowed)
+    print(parse_ipv4("010.0.0.1"))
     print(parse_ipv4("256.1.1.1"))            # []  (octet > 255)
     print(parse_ipv4("1.2.3"))                # []  (too few octets)
     print(parse_ipv4("1.2.3.4.5"))            # []  (too many octets)
@@ -285,10 +299,14 @@ if __name__ == "__main__":
     print(adjacent_ipv4("192.168.0.255", "up"))     # 192.168.1.0
     print(adjacent_ipv4("192.168.1.0", "down"))     # 192.168.0.255
     print(adjacent_ipv4("0.0.0.0", "up"))           # 0.0.0.1
-    print(adjacent_ipv4("255.255.255.255", "up"))   # ""  (overflow -> empty line)
-    print(adjacent_ipv4("0.0.0.0", "down"))         # ""  (underflow -> empty line)
-    print(adjacent_ipv4("192.168.0.1", "sideways")) # ""  (bad direction -> empty line)
-    print(adjacent_ipv4("999.1.1.1", "up"))         # ""  (invalid ip -> empty line)
+    # -> ""  (overflow -> empty line)
+    print(adjacent_ipv4("255.255.255.255", "up"))
+    # -> ""  (underflow -> empty line)
+    print(adjacent_ipv4("0.0.0.0", "down"))
+    # -> ""  (bad direction -> empty line)
+    print(adjacent_ipv4("192.168.0.1", "sideways"))
+    # -> ""  (invalid ip -> empty line)
+    print(adjacent_ipv4("999.1.1.1", "up"))
 
     # ----- cidr_range -----
     print(cidr_range("192.168.0.0/24"))    # ['192.168.0.0', '192.168.0.255']
@@ -303,7 +321,8 @@ if __name__ == "__main__":
     print(ip_in_cidr("192.168.0.0", "192.168.0.0/24"))    # 1  (first address)
     print(ip_in_cidr("192.168.0.255", "192.168.0.0/24"))  # 1  (last address)
     print(ip_in_cidr("192.168.1.10", "192.168.0.0/24"))   # 0  (outside block)
-    print(ip_in_cidr("10.0.0.0", "0.0.0.0/0"))            # 1  (whole address space)
+    # -> 1  (whole address space)
+    print(ip_in_cidr("10.0.0.0", "0.0.0.0/0"))
     print(ip_in_cidr("bad", "192.168.0.0/24"))            # -1 (invalid ip)
     print(ip_in_cidr("192.168.0.1", "192.168.0.0/33"))    # -1 (invalid cidr)
 
@@ -312,7 +331,11 @@ if __name__ == "__main__":
     # 0000.0000.0000.0000.0000.0000.0001.0000
     print(adjacent_ipv6("0000.0000.0000.0000.0000.0000.0001.0000", "down"))
     # 0000.0000.0000.0000.0000.0000.0000.ffff
-    print(adjacent_ipv6("ffff.ffff.ffff.ffff.ffff.ffff.ffff.ffff", "up"))    # ""  (overflow)
-    print(adjacent_ipv6("0000.0000.0000.0000.0000.0000.0000.0000", "down"))  # ""  (underflow)
-    print(adjacent_ipv6("0000.0000.0000.0000.0000.0000.0000.0001", "left"))  # ""  (bad direction)
-    print(adjacent_ipv6("0.0.0.0.0.0.0", "up"))                              # ""  (only 7 groups)
+    # -> ""  (overflow)
+    print(adjacent_ipv6("ffff.ffff.ffff.ffff.ffff.ffff.ffff.ffff", "up"))
+    # -> ""  (underflow)
+    print(adjacent_ipv6("0000.0000.0000.0000.0000.0000.0000.0000", "down"))
+    # -> ""  (bad direction)
+    print(adjacent_ipv6("0000.0000.0000.0000.0000.0000.0000.0001", "left"))
+    # -> ""  (only 7 groups)
+    print(adjacent_ipv6("0.0.0.0.0.0.0", "up"))

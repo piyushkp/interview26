@@ -28,22 +28,24 @@ class _Batch:
 
 
 def _batch_end(batch):
-    """Sort key: a batch's expiration time (used to take soonest-expiring first)."""
+    """Sort key: a batch's expiration time (used to take
+    soonest-expiring first)."""
     # Time: O(1), Space: O(1) - returns a single field.
     return batch.end
 
 
 # Approach (in plain terms):
-#   Think of each credit grant like a gift card that only works during a certain
-#   time window and has some money left on it. We just keep a list of all the
-#   gift cards.
-#     - balance(t): add up the money left on every card that is still valid at time t.
-#     - charge(amount, t): look at all the cards valid at time t. If together they
-#       don't have enough, don't charge anything (all-or-nothing). If they do,
-#       spend from the card that expires soonest first, so credits get used before
-#       they expire and go to waste.
-#   Every request tells us its own time, so even if requests arrive out of order,
-#   we simply check which cards are valid at that moment.
+#   Think of each credit grant like a gift card that only works during a
+#   certain time window and has some money left on it. We just keep a list
+#   of all the gift cards.
+#     - balance(t): add up the money left on every card that is still valid at
+#       time t.
+#     - charge(amount, t): look at all the cards valid at time t. If together
+#       they don't have enough, don't charge anything (all-or-nothing). If they
+#       do, spend from the card that expires soonest first, so credits get used
+#       before they expire and go to waste.
+#   Every request tells us its own time, so even if requests arrive out of
+#   order, we simply check which cards are valid at that moment.
 class GpuCreditManager:
 
     def __init__(self):
@@ -51,16 +53,19 @@ class GpuCreditManager:
         self._batches = []
 
     def add(self, amount, timestamp, expiration):
-        """Register a new credit batch active in [timestamp, timestamp + expiration)."""
+        """Register a new credit batch active in
+        [timestamp, timestamp + expiration)."""
         # Time: O(1) amortized (list append), Space: O(1) per call.
         self._batches.append(_Batch(timestamp, timestamp + expiration, amount))
 
     def charge(self, amount, timestamp):
         """Consume amount from batches active at timestamp, soonest-expiring
-        first. Returns True and applies the deduction only if the active balance
-        covers the full amount; otherwise returns False and changes nothing."""
+        first. Returns True and applies the deduction only if the active
+        balance covers the full amount; otherwise returns False and changes
+        nothing."""
         # n = total batches, k = batches active at this timestamp (k <= n).
-        # Time:  O(n + k log k) - scan all n batches, then sort the k active ones.
+        # Time:  O(n + k log k) - scan all n batches, then sort the k
+        #        active ones.
         # Space: O(k) - the list of active batches.
         # Collect the batches that are active at this timestamp.
         active = []
@@ -97,7 +102,8 @@ class GpuCreditManager:
     def simulate(operations):
         """Simulate the manager, returning the result of every non-add op."""
         # m = number of operations, n = batches accumulated so far.
-        # Time:  O(m * n log n) worst case (each charge sorts the active batches).
+        # Time:  O(m * n log n) worst case (each charge sorts the active
+        #        batches).
         # Space: O(m + n) - the results list plus the stored batches.
         mgr = GpuCreditManager()
         results = []

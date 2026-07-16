@@ -1,6 +1,7 @@
 """In-memory counter for chat activity per exact (user_id, chat_id) pair.
 
-process_event records one event; get_count returns how many events for that
+process_event records one event; 
+get_count returns how many events for that
 pair fall in the inclusive 15-minute (900 s) window ending at the pair's most
 recent timestamp T, i.e. timestamps in [T - 900, T]. Returns 0 if the pair has
 no events.
@@ -15,13 +16,14 @@ from bisect import bisect_left
 
 
 # Approach (in plain terms):
-#   Keep a separate guest book (a list of timestamps) for each exact
-#   (user_id, chat_id) pair. Every event just stamps the current time on that
-#   pair's page, and because events for a pair arrive in time order the page
-#   stays sorted. To count the last 15 minutes (900 s): look at the newest stamp
-#   T, work out the cutoff T - 900, and since the page is already sorted, do a
-#   quick binary search to find where the cutoff lands. Everything from that spot
-#   to the end is inside the window, so the answer is how many stamps come after.
+#   Keep a separate guest book (a list of timestamps) for each exact (user_id,
+#   chat_id) pair. Every event just stamps the current time on that pair's
+#   page, and because events for a pair arrive in time order the page stays
+#   sorted. To count the last 15 minutes (900 s): look at the newest stamp T,
+#   work out the cutoff T - 900, and since the page is already sorted, do a
+#   quick binary search to find where the cutoff lands. Everything from that
+#   spot to the end is inside the window, so the answer is how many stamps
+#   come after.
 class ChatEventCounter:
 
     def __init__(self):
@@ -42,7 +44,8 @@ class ChatEventCounter:
         """Record one event for (user_id, chat_id) at the given timestamp."""
         # Time:  O(1) amortized - one dictionary lookup plus a list append.
         # Space: O(1) - stores a single extra timestamp.
-        self._events.setdefault(self._key(user_id, chat_id), []).append(timestamp)
+        key = self._key(user_id, chat_id)
+        self._events.setdefault(key, []).append(timestamp)
 
     def get_count(self, user_id, chat_id):
         """Events for (user_id, chat_id) within [T - 900, T], T = latest ts."""
@@ -62,7 +65,8 @@ class ChatEventCounter:
 
     @staticmethod
     def simulate(operations):
-        """Replay operations, returning the result of every getCount in order."""
+        """Replay operations, returning the result of every getCount in
+        order."""
         # p = number of operations, m = events for the busiest pair.
         # Time:  O(p log m) - each getCount does one binary search.
         # Space: O(p) - the results list plus the stored timestamps.
