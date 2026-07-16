@@ -11,22 +11,42 @@ Example: {"a": "hi", "b": ""} -> "2#1#a2#hi1#b0#"; the empty map -> "0#".
 """
 
 
+# Approach (in plain terms):
+#   We need to flatten a dictionary into one string and later rebuild it exactly,
+#   even when keys or values contain tricky characters like '#', ':' or spaces.
+#   The trick is the one shipping labels use: write the LENGTH of each piece right
+#   before the piece itself. To read it back you first read the number, then grab
+#   exactly that many characters - so the content can be anything without ever
+#   confusing the reader about where a piece ends.
+#     - serialize: first write how many pairs there are, then for each key and each
+#       value write "<length>#<text>". Keys are sorted so the same map always
+#       produces the exact same string.
+#     - deserialize: read the pair count, then repeatedly read a length, take that
+#       many characters, and rebuild each key and value.
+#   It is like tearing off exactly the number of squares of tape someone told you
+#   to take, instead of guessing where one piece stops and the next begins.
 def serialize(mapping):
     """Serialize a map to the length-prefixed format (keys sorted lexicographically)."""
+    # n = number of pairs, m = total characters across all keys and values.
+    # Time:  O(n log n + m) - sort the n keys, then copy m characters of content.
+    # Space: O(n + m) - the collected pieces and the joined output string.
     parts = [f"{len(mapping)}#"]
-    for k in sorted(mapping):  # deterministic key order
-        v = mapping[k]
-        parts.append(f"{len(k)}#{k}")
-        parts.append(f"{len(v)}#{v}")
+    for key in sorted(mapping):  # deterministic key order
+        value = mapping[key]
+        parts.append(f"{len(key)}#{key}")
+        parts.append(f"{len(value)}#{value}")
     return "".join(parts)
 
 
 def deserialize(data):
     """Reconstruct the original map from a serialized string."""
+    # L = length of the serialized string.
+    # Time:  O(L) - one left-to-right scan, reading each character a constant
+    #        number of times. Space: O(L) - the rebuilt keys, values, and map.
     mapping = {}
     pos = [0]
     count = _read_length(data, pos)
-    for _ in range(count):
+    for pair_number in range(count):
         key = _read_field(data, pos)
         value = _read_field(data, pos)
         mapping[key] = value
@@ -35,10 +55,12 @@ def deserialize(data):
 
 def _read_length(s, pos):
     """Read a run of digits terminated by '#', returning the int; advance past '#'."""
+    # d = number of digit characters in this length token.
+    # Time: O(d) - walks the digits once. Space: O(1).
     start = pos[0]
     while pos[0] < len(s) and s[pos[0]] != "#":
-        c = s[pos[0]]
-        if c < "0" or c > "9":
+        ch = s[pos[0]]
+        if ch < "0" or ch > "9":
             raise ValueError(f"Malformed: expected digit at index {pos[0]}")
         pos[0] += 1
     if pos[0] >= len(s) or start == pos[0]:
@@ -50,6 +72,8 @@ def _read_length(s, pos):
 
 def _read_field(s, pos):
     """Read a length-prefixed field: <len>#<exactly len chars>."""
+    # f = length of this field's content (taken from its length prefix).
+    # Time: O(f) - reads the prefix and slices f characters. Space: O(f) - the slice.
     length = _read_length(s, pos)
     if pos[0] + length > len(s):
         raise ValueError("Malformed: field length exceeds input")
@@ -61,6 +85,8 @@ def _read_field(s, pos):
 def solution(operation, data):
     """Judge-style entry point: "serialize" a dict -> str, or "deserialize" a
     str -> dict."""
+    # Time/Space: O(1) dispatch that delegates to serialize or deserialize, so the
+    # cost is whichever of those runs (see their complexity notes above).
     if operation == "serialize":
         return serialize(data)
     if operation == "deserialize":
@@ -69,7 +95,38 @@ def solution(operation, data):
 
 
 if __name__ == "__main__":
-    print(solution("serialize", {}))            # 0#
+    # ----- serialize -----
+    print(solution("serialize", {}))                        # 0#
     encoded = solution("serialize", {"a": "hi", "b": ""})
-    print(encoded)                              # 2#1#a2#hi1#b0#
-    print(solution("deserialize", encoded))     # {'a': 'hi', 'b': ''}
+    print(encoded)                                          # 2#1#a2#hi1#b0#
+    print(serialize({"key": "value"}))                      # 1#3#key5#value
+    print(serialize({"": ""}))                              # 1#0#0#
+    print(serialize({"a#b": "c#d", "x": "y"}))              # 2#3#a#b3#c#d1#x1#y
+    print(serialize({"n": "12#34"}))                        # 1#1#n5#12#34
+
+    # ----- deserialize (round-trips) -----
+    print(solution("deserialize", encoded))                 # {'a': 'hi', 'b': ''}
+    print(deserialize("0#"))                                # {}
+    print(deserialize("1#0#0#"))                            # {'': ''}
+    print(deserialize(serialize({"a#b": "c#d", "x": "y"})))  # {'a#b': 'c#d', 'x': 'y'}
+    print(deserialize(serialize({"n": "12#34"})))           # {'n': '12#34'}
+
+    # ----- malformed input raises ValueError -----
+    try:
+        deserialize("")
+    except ValueError as err:
+        print("error:", err)          # error: Malformed: missing length or '#'
+    try:
+        deserialize("xyz")
+    except ValueError as err:
+        print("error:", err)          # error: Malformed: expected digit at index 0
+    try:
+        deserialize("1#5#ab")
+    except ValueError as err:
+        print("error:", err)          # error: Malformed: field length exceeds input
+
+    # ----- unknown operation raises ValueError -----
+    try:
+        solution("frobnicate", {})
+    except ValueError as err:
+        print("error:", err)          # error: Unknown operation: frobnicate
