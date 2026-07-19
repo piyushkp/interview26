@@ -1,21 +1,46 @@
-"""A GPU credit ledger fed by a stream of requests whose timestamps are NOT
-necessarily increasing. Each GET reflects only the requests that have arrived
-so far, evaluated at the query timestamp; a later-arriving request with an
-earlier timestamp affects future GETs but never retroactively changes a GET
-that was already returned.
+"""GPU credit ledger fed by requests whose timestamps may arrive OUT OF
+ORDER (a later request can carry an earlier, back-dated timestamp).
 
-Request forms:
-    ["GRANT",  user, amount, timestamp]  add amount at timestamp
-    ["CHARGE", user, amount, timestamp]  subtract amount IF the running balance
-                                         at that moment is >= amount, else
-                                         ignore
-    ["GET",    user, timestamp]          balance considering only arrived
-                                         events with timestamp <= the query
-                                         timestamp
+Overview:
+  Track per-user GPU credit as GRANT and CHARGE requests stream in.
+  Each GET reports the balance at a query time, considering only the
+  requests seen so far. Because every GET recomputes from scratch, a
+  back-dated request that arrives late affects future GETs but never
+  rewrites a GET that was already answered.
 
-Within a user, events are applied in (timestamp, arrival-order) order — a
-stable tie-breaker for equal timestamps. Each GET replays that user's eligible
-events from scratch so charge successes reflect the correct ordering.
+Interface (class CreditLedger):
+  - grant(user, amount, timestamp, arrival) -> None
+        Record a GRANT (arrival = its position in the input stream).
+  - charge(user, amount, timestamp, arrival) -> None
+        Record a CHARGE; whether it succeeds is decided later, at GET
+        (replay) time, not when recorded.
+  - get(user, timestamp) -> int
+        Balance for user at the query timestamp. Returns 0 for an
+        unknown user.
+  - simulate(requests) -> list[int] (staticmethod)
+        Process requests in arrival order and return one value per GET.
+        Request forms:
+          ["GRANT",  user, amount, timestamp]
+          ["CHARGE", user, amount, timestamp]
+          ["GET",    user, timestamp]
+        Any other kind raises ValueError.
+
+Semantics and rules:
+  - A GET at time t replays that user's events with timestamp <= t,
+    from a starting balance of 0, in (timestamp, arrival) order.
+  - Equal timestamps break ties by arrival order (stream position), so
+    a CHARGE recorded before its funding GRANT at the same timestamp is
+    evaluated first and may be skipped.
+  - A CHARGE applies only if the running balance is >= its amount at
+    that point in the replay; otherwise it is ignored (never negative).
+
+Constraints/assumptions:
+  - Timestamps are not assumed to be increasing. Only events with
+    timestamp <= the query time are considered by a GET.
+
+Example:
+  GRANT alice 10 @5, CHARGE alice 4 @7, GET alice @7 -> 6; then a late
+  CHARGE alice 10 @6, GET alice @7 -> 0.
 """
 
 
@@ -92,7 +117,7 @@ class CreditLedger:
         for event in events:
             if event.timestamp <= timestamp:
                 eligible.append(event)
-        # Apply in (timestamp, arrival) order — stable tie-break by arrival.
+        # Apply in (timestamp, arrival) order - stable tie-break by arrival.
         eligible.sort(key=_event_order)
         balance = 0
         for event in eligible:

@@ -1,15 +1,48 @@
-"""In-memory credit ledger for a shared GPU pool with idempotent events.
+"""Idempotent in-memory credit ledger for a shared GPU pool, where each
+event is identified by a unique event_id.
 
-Event schema (event_id, tenant_id, delta): a signed delta changes one tenant's
-balance. Rules:
-  - A balance may never go below 0; an event that would make it negative is
-    rejected (no change).
-  - Idempotency: a repeated event_id does not change state again and returns
-    the SAME accept/reject result produced the first time.
-  - Unknown tenants have balance 0.
+Overview:
+  Tenants hold a credit balance changed by signed events. A balance is
+  never allowed to drop below zero, and replaying the same event_id is
+  a no-op that returns its original result - safe against duplicate
+  deliveries.
 
-Average O(1) per get/apply: a dict of balances plus a dict remembering each
-processed event_id's first result.
+Interface (class GpuCreditLedger):
+  - init(events) -> None
+        Apply a list of initial events in order. Each event is
+        [event_id, tenant_id, delta] and follows the same rules as
+        apply().
+  - get_balance(tenant_id) -> int
+        Current balance for a tenant; 0 for an unknown tenant.
+  - apply(event_id, tenant_id, delta) -> bool
+        Add delta to the tenant's balance. Returns True if accepted,
+        False if it would make the balance negative (then nothing
+        changes). A repeated event_id returns the SAME result it gave
+        the first time and changes no state.
+  - solution(init_events, operations) -> list (staticmethod)
+        Run init_events, then each op, collecting one result per op.
+        Ops:
+          ["get", tenant_id] -> int balance
+          ["apply", [event_id, tenant, delta]] -> bool accepted
+        Any other op kind raises ValueError.
+
+Semantics and rules:
+  - Rejection is all-or-nothing: an event that would overdraw is
+    dropped entirely (balance unchanged) and reports False.
+  - A delta of 0 is accepted and may leave the balance exactly at 0.
+  - Idempotency is keyed by event_id GLOBALLY, even across tenants: the
+    first tenant to use an id wins; a later reuse just replays the
+    stored result.
+
+Constraints/assumptions:
+  - event_id values are the identity for idempotency; callers reuse an
+    id only when they intend the same logical event.
+  - Average O(1) per get/apply via a balances dict and a dict of each
+    processed event_id's first result.
+
+Example:
+  apply("d", "t", 5) -> True (balance 5); apply("d", "t", 5) again ->
+  True, but the balance stays 5 (no double apply).
 """
 
 

@@ -1,10 +1,33 @@
 """Group a workflow's jobs into execution stages by dependency level.
 
-A workflow is a dict of job name -> config; a config may have a "needs" list
-of jobs that must finish first. workflow_stages(jobs) returns a list of
-stages (each a list of job names): every job in a stage has all prerequisites
-in earlier stages, so a stage's jobs can run in parallel. Names within a stage
-are sorted for deterministic output.
+Overview:
+  A workflow is a set of named jobs, some of which must wait for others to
+  finish. Partition the jobs into ordered stages such that every job's
+  prerequisites all live in earlier stages; jobs sharing a stage have no
+  dependency between them and can run in parallel. This is a level-by-level
+  topological sort (Kahn's algorithm).
+
+Interface:
+  workflow_stages(jobs) -> list[list[str]]
+      jobs is a dict mapping job name -> config dict. A config may hold a
+      "needs" key whose value is a list of job names that must finish first
+      (a missing or empty "needs" means no prerequisites). Returns a list of
+      stages, each a list of job names sorted alphabetically for
+      deterministic output.
+
+Semantics / rules:
+  - Stage 0 holds every job with no prerequisites; each later stage holds
+    the jobs whose prerequisites all completed in earlier stages.
+  - An empty workflow returns an empty list.
+  - The input is assumed to be a valid DAG (every name in a "needs" list is
+    a real job and there are no cycles); cycles are not detected.
+
+Example:
+  workflow_stages({
+      "compile": {}, "lint": {},
+      "test": {"needs": ["compile", "lint"]},
+      "package": {"needs": ["test"]}, "publish": {"needs": ["test"]},
+  }) -> [['compile', 'lint'], ['test'], ['package', 'publish']]
 """
 
 

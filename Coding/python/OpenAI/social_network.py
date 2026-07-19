@@ -1,10 +1,34 @@
-"""A social network with users, directed follows, and immutable snapshots.
+"""A social network with users, directed follows, and snapshots.
 
-SocialNetwork supports addUser/follow/unfollow, getFollowers/getFollowees
-(both sorted), and snapshots: createSnapshot() freezes the current follow graph
-and returns an integer id; isFollowInSnapshot(id, a, b) reports whether a
-followed b at that moment. Snapshots never change when the live graph does.
-Adding the same follow twice behaves as a single relationship.
+Overview:
+  Users are connected by directed follow edges (a follows b). At any
+  moment createSnapshot() freezes the whole follow graph; the frozen
+  copy never changes even as the live graph is edited afterwards.
+
+Interface (class SocialNetwork):
+  - addUser(username) -> None
+        Register a user; a no-op if already present.
+  - follow(user_a, user_b) -> None
+        user_a starts following user_b. Auto-registers unknown users
+        and is idempotent, so a duplicate follow is one relationship.
+  - unfollow(user_a, user_b) -> None
+        user_a stops following user_b; a no-op if not following.
+  - getFollowers(user) -> list
+        Users currently following user, sorted (empty if unknown).
+  - getFollowees(user) -> list
+        Users user currently follows, sorted (empty if unknown).
+  - createSnapshot() -> int
+        Freeze the current graph and return its id (0, 1, 2, ... in
+        creation order).
+  - isFollowInSnapshot(snapshot_id, user_a, user_b) -> bool
+        Whether user_a followed user_b when that snapshot was taken.
+        An out-of-range snapshot_id returns False.
+
+Example:
+  n = SocialNetwork(); n.follow('Nina','Omar'); n.follow('Pia','Omar')
+  s = n.createSnapshot(); n.unfollow('Nina','Omar')
+  n.getFollowers('Omar') -> ['Pia']   # live graph
+  n.isFollowInSnapshot(s,'Nina','Omar') -> True   # frozen snapshot
 """
 
 

@@ -1,13 +1,34 @@
-"""Simulate disease contagion on a grid where infected cells spread to
-healthy neighbors and, after enough infectious rounds, recover into a
-permanently immune state.
+"""Simulate disease contagion on a grid with recovery into immunity.
 
-  - simulate_contagion(grid, rounds, recovery_time): run the model for a
-    fixed number of rounds and return the resulting grid.
+Overview:
+  A 2D grid holds people in four states. Over a fixed number of rounds,
+  infected cells spread the disease to healthy orthogonal neighbors, and
+  cells that have been infected long enough recover and become permanently
+  immune. Return the grid after exactly `rounds` rounds.
 
-Cell values: 0 empty, 1 healthy, 2 infected, 3 immune. Infection spreads to
-the four orthogonal neighbors. An infected cell that has completed
-`recovery_time` infectious rounds becomes immune.
+Interface:
+  simulate_contagion(grid, rounds, recovery_time) -> list[list[int]]
+      grid is a list of equal-length int rows; rounds and recovery_time are
+      non-negative ints. Returns a NEW grid (the input is never mutated). An
+      empty grid ([]) is returned unchanged.
+
+Cell values:
+  0 = empty, 1 = healthy, 2 = infected, 3 = immune.
+
+Semantics / rules:
+  - Each round is decided from the board as it looked at the START of the
+    round, then all changes are applied together, so the step is
+    simultaneous.
+  - An infected cell infects every healthy (1) up/down/left/right neighbor.
+    A cell infected during the current round does not spread until the next.
+  - An infected cell tracks how many rounds it has been infectious. Once it
+    reaches `recovery_time` it becomes immune (3), but it still spreads
+    during that final infectious round before recovering.
+
+Example:
+  simulate_contagion([[1, 2, 1, 1]], rounds=3, recovery_time=2)
+      -> [[3, 3, 3, 2]]
+  (the row evolves [1,2,1,1] -> [2,2,2,1] -> [2,3,2,2] -> [3,3,3,2])
 """
 
 

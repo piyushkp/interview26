@@ -1,20 +1,34 @@
 """Resolve a shell-style `cd` and return the destination path.
 
-The problem builds up in three parts, solved here as three separate functions
-(each a complete solution for that part):
+Overview:
+  Given the current working directory and a `cd` argument, compute the
+  resulting absolute path. The problem grows in three parts, solved here as
+  three independent functions that share the same path helpers.
 
-  cd_part1(current_dir, new_dir)
-      Standard traversal: '.' stays put, '..' goes to the parent, a leading
-      '/' means new_dir is absolute, and rising above the root returns None.
-  cd_part2(current_dir, new_dir)
-      Part 1 plus '~', which expands to HOME (/home/user) as an absolute path.
-  cd_part3(current_dir, new_dir, soft_links=None)
-      Part 2 plus symbolic links: the path is rewritten through soft_links,
-      preferring the LONGEST matching key, following chains, and returning
-      None if the links form a cycle.
+Interface:
+  cd_part1(current_dir, new_dir) -> str | None
+      Standard traversal. A normal name steps into a folder, '.' stays put,
+      '..' goes to the parent, and a leading '/' makes new_dir absolute
+      (resolved from the root). Rising above the root returns None.
+  cd_part2(current_dir, new_dir) -> str | None
+      Part 1 plus '~', which expands to HOME (/home/user) as an absolute
+      path ('~' -> HOME, '~/x' -> HOME + '/x').
+  cd_part3(current_dir, new_dir, soft_links=None) -> str | None
+      Part 2 plus symbolic links. soft_links is a dict of path -> target.
+      After normalizing '.' and '..', the path prefix is rewritten through
+      soft_links using the LONGEST matching key, repeating so links that
+      point to other links cascade. A key matches only on a folder boundary
+      ('/a' matches '/a' and '/a/b', not '/ab'). Links that loop give None.
 
-Shared path helpers (_to_components, _resolve_stack, _join, ...) are reused by
-every part.
+Semantics / rules:
+  - All three return an absolute path string, or None when the walk rises
+    above the root (or, for part 3, when the links form a cycle).
+  - soft_links defaults to None; when falsy, cd_part3 behaves like Part 2.
+
+Example:
+  cd_part1("/foo/bar", "baz") -> "/foo/bar/baz"
+  cd_part2("/foo/bar", "~") -> "/home/user"
+  cd_part3("/foo/bar", "baz", {"/foo/bar": "/abc"}) -> "/abc/baz"
 """
 
 HOME = "/home/user"     # where a leading '~' expands to

@@ -1,11 +1,40 @@
-"""Generate labeling schedules. An assignment is [task_id, model_id, human_id];
-tasks are t1..t{total_task}, models m1..m{total_model}, humans
-h1..h{total_human}.
-Every human must appear in at least k assignments, the same human never
-annotates the same task twice, and every ID must be valid. Returns an empty
-list if no valid schedule exists.
-  - any_schedule             Part 1: any valid schedule.
-  - prefix_balanced_schedule Part 2: additionally prefix-balanced.
+"""Generate labeling schedules of [task_id, model_id, human_id] triples.
+
+Overview:
+  Work items are labeled by humans using models. Tasks are named
+  t1..t{total_task}, models m1..m{total_model}, and humans
+  h1..h{total_human}. A schedule is a flat list of [task_id, model_id,
+  human_id] rows. Every human must receive at least k assignments, no human
+  labels the same task twice, and every ID must be valid.
+
+Interface:
+  any_schedule(total_task, total_model, total_human, k) -> list[list[str]]
+      Part 1: any valid schedule. Each human gets k distinct tasks; the
+      reference rotates each human's starting task by the human index (human
+      i takes tasks i..i+k-1 mod total_task). model_id is always "m1".
+  prefix_balanced_schedule(total_task, total_model, total_human, k)
+      -> list[list[str]]
+      Part 2: additionally prefix-balanced. Emitted in k rounds; round r
+      assigns task t{r+1} to every human, and human i uses model
+      m{((i + r) % total_model) + 1}. Because every round completes before
+      the next starts and models rotate, cutting the output at any prefix
+      keeps model usage (and per-human work) balanced.
+
+Semantics / rules:
+  - any_schedule output is human-major (all of human 1's rows, then human
+    2's, ...); prefix_balanced_schedule output is round-major (all humans in
+    round 1, then round 2, ...).
+  - Both return an empty list when no valid schedule exists: k == 0 (nothing
+    to schedule) or k > total_task (cannot pick k distinct tasks). Zero
+    humans likewise yields an empty list.
+
+Constraints / assumptions:
+  - All counts and k are non-negative ints; total_model >= 1 whenever rows
+    are produced (it is used as a rotation modulus).
+
+Example:
+  any_schedule(3, 1, 2, 2) ->
+    [['t1','m1','h1'], ['t2','m1','h1'], ['t2','m1','h2'], ['t3','m1','h2']]
 """
 
 

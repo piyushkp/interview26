@@ -1,17 +1,41 @@
-"""GPU credit calculator with grants that expire (inclusive window).
+"""GPU credit calculator whose grants expire over an INCLUSIVE window.
+addCredit registers a grant usable during [timestamp, timestamp +
+expiration] - BOTH ends included.
 
-addCredit(credit_id, amount, timestamp, expiration) registers a credit grant
-usable during the inclusive window [timestamp, timestamp + expiration]. The
-credit_id is only a label (several grants may share one); it does not affect
-the math.
+Overview:
+  Credit is granted in dated chunks that each expire. Spending draws
+  from the grants valid at that instant, taking the soonest-to-expire
+  first so credit is used before it lapses; a balance never goes below
+  zero.
 
-  - addCredit(credit_id, amount, timestamp, expiration): register a grant.
-  - useCredit(timestamp, amount): spend amount at that time, taking from the
-    soonest-to-expire grant first; spends what it can and ignores any excess.
-  - getBalance(timestamp): total credit still usable at that timestamp.
+Interface (class GPUCredit, camelCase API):
+  - addCredit(credit_id, amount, timestamp, expiration) -> None
+        Register a grant of amount usable in
+        [timestamp, timestamp + expiration] (inclusive). credit_id is
+        only a label (grants may share one) and is not stored.
+  - useCredit(timestamp, amount) -> None
+        Spend amount at timestamp from soonest-to-expire grants first.
+        Partial spends are allowed: it takes what the usable grants
+        hold and silently ignores any shortfall (no error, never
+        negative). Returns nothing.
+  - getBalance(timestamp) -> int
+        Total credit still usable at timestamp (0 if none).
 
-Every call carries its own timestamp, so requests may arrive out of order
-without changing an already-returned result.
+Semantics and rules:
+  - Both ends of a grant's window count, so a grant added at t with
+    expiration e is usable at t and at t + e.
+  - Spending order is soonest expiry first; grants that expire at the
+    same time break ties by the order they were added.
+  - The credit_id does not affect the math; two grants may carry the
+    same id.
+
+Constraints/assumptions:
+  - Each call carries its own timestamp, so requests may arrive out of
+    order without changing an already-returned result.
+
+Example:
+  addCredit("microsoft", 10, 10, 30) -> usable in [10, 40];
+  getBalance(10) -> 10; getBalance(40) -> 10; getBalance(41) -> 0.
 """
 
 

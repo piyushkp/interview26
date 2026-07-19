@@ -1,18 +1,40 @@
 """Simulate a battle between two ordered teams of monsters.
 
-battle(team1, team2) returns an Outcome (winner's name + event log). The team
-passed first attacks first; one champion from each team fights at a time, and a
-defeated champion is replaced by the next monster in its team. The first team
-with no monsters left loses.
+Overview:
+  Two teams send their monsters into the ring one champion at a time. The
+  team passed first attacks first, then turns alternate. A monster whose
+  life reaches 0 is defeated and replaced by the next monster in its team.
+  The first team to run out of monsters loses.
 
-Follow-up: monsters may have a `type` and a `weakness`. Damage is doubled when
-the attacker's type matches the defender's weakness ("super effective"), halved
-and rounded down when the defender's type matches the attacker's weakness ("not
-very effective"), and unchanged otherwise.
+Interface:
+  Monster(name, life_points, attack, type_=None, weakness=None)
+      A combatant. `type_` is stored as attribute `type`; `type`/`weakness`
+      are optional strings consumed by the damage modifiers.
+  Team(name, monsters)
+      A named, ordered list of Monster objects.
+  Outcome(winning_team_name, log, is_stalemate=False)
+      Result of a battle. `winning_team_name` is the winner's name, or None
+      on a stalemate; `log` is a list of event strings; `is_stalemate` is
+      True only for a stalemate.
+  battle(team1, team2) -> Outcome
+      Runs the fight (team1 attacks first) and returns the Outcome. Both
+      teams are cloned, so the caller's monsters are never mutated.
 
-If neither current monster can damage the other, the fight cannot progress, so
-battle returns a stalemate Outcome (winning_team_name = None) instead of
-looping forever.
+Semantics / rules:
+  - Damage: a hit subtracts the attacker's `attack` from the defender's
+    life, floored at 0. It is doubled ("super effective") when the
+    attacker's type equals the defender's weakness, and halved with
+    round-down ("not very effective") when the defender's type equals the
+    attacker's weakness.
+  - Stalemate: before each hit, if neither current monster can damage the
+    other (both effective damages are 0), the fight cannot progress and
+    battle returns Outcome(None, log, is_stalemate=True) instead of looping
+    forever.
+
+Example:
+  battle(Team("Blue", [Monster("Dog", 3, 2)]),
+         Team("Red", [Monster("Cat", 3, 3)])) -> Outcome with
+  winning_team_name == "Red" (Dog hits for 2, Cat hits for 3 and wins).
 """
 
 

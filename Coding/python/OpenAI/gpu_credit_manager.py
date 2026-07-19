@@ -1,15 +1,46 @@
-"""Manage GPU credit batches that expire. A batch added as
-(id, amount, timestamp, expiration) is usable during the half-open interval
-[timestamp, timestamp + expiration).
+"""Manager for GPU credit batches that expire over a HALF-OPEN window.
+A batch added at (amount, timestamp, expiration) is usable during
+[timestamp, timestamp + expiration): start inclusive, end exclusive.
 
-  - add(amount, timestamp, expiration): register a credit batch.
-  - charge(amount, timestamp): consume amount from batches active at that
-    timestamp, soonest-to-expire first; all-or-nothing (no partial charge).
-  - balance(timestamp): total remaining credits active at that timestamp.
+Overview:
+  Credits arrive in dated batches and later become unusable once their
+  window ends. Charges spend from whatever is currently valid, using
+  the soonest-to-expire credits first so nothing is wasted.
 
-Operations are applied in input order; a later op may reference an earlier
-timestamp but never retroactively changes an already-returned result.
-expiration == 0 yields an empty interval (never active).
+Interface (class GpuCreditManager):
+  - add(amount, timestamp, expiration) -> None
+        Register a credit batch active in
+        [timestamp, timestamp + expiration).
+  - charge(amount, timestamp) -> bool
+        If the batches active at timestamp together cover amount,
+        deduct it (soonest-to-expire first) and return True; otherwise
+        change nothing and return False (all-or-nothing).
+  - balance(timestamp) -> int
+        Total remaining credit across batches active at timestamp.
+  - simulate(operations) -> list (staticmethod)
+        Apply operations in order, returning one result per non-add op.
+        Ops (id is unused metadata):
+          ["add", id, amount, timestamp, expiration]
+          ["charge", amount, timestamp] -> bool
+          ["balance", timestamp] -> int
+        Any other op kind raises ValueError.
+
+Semantics and rules:
+  - The window is half-open: a batch is active at its start time but
+    NOT at timestamp + expiration.
+  - expiration == 0 gives an empty window, so the batch is never
+    active.
+  - A charge is all-or-nothing: if the active total is short, no batch
+    is touched. Otherwise it drains soonest-expiring batches first.
+
+Constraints/assumptions:
+  - Operations are applied in input order. A later op may name an
+    earlier timestamp, but that never retroactively changes a result
+    already returned.
+
+Example:
+  add(10, 5, 5) -> active in [5, 10); balance(7) -> 10;
+  charge(4, 8) -> True; balance(8) -> 6; balance(10) -> 0.
 """
 
 

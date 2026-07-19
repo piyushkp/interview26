@@ -1,10 +1,37 @@
-"""Iterate a list of int chunks value-by-value, resumable from a token.
+"""Iterate a list of integer chunks value-by-value, pausable/resumable.
 
-ResumableIterator([[7, 8, 9], [10], [], [11, 12]]) yields 7, 8, 9, 10, 11, 12
-- empty chunks are skipped. next() returns the next int (raising StopIteration
-once exhausted) and hasNext() reports whether one remains. getState() hands
-back an opaque "chunk:item" token for the NEXT position, and the fromState
-factory rebuilds an iterator parked at exactly that position.
+Overview:
+  The input is a list of chunks (each chunk a list of ints), some of which
+  may be empty. The iterator walks it as one flat stream of values,
+  skipping empty chunks entirely. Its distinguishing feature is that
+  progress can be frozen into a small string token and later handed to a
+  factory to rebuild an iterator that resumes at exactly the same spot.
+
+Interface:
+  - ResumableIterator(data) -> a new iterator at the first value.
+  - hasNext() -> bool: True while at least one value remains.
+  - next() -> int: return the next value and advance; raises StopIteration
+    (message "no more elements") once the chunks are exhausted.
+  - getState() -> str: an opaque "chunk:item" token naming the position of
+    the NEXT value to be returned.
+  - fromState(data, state) -> ResumableIterator: static factory that
+    rebuilds an iterator over data parked at a previously saved token.
+
+Semantics and rules:
+  - Empty chunks contribute nothing and are transparently skipped, both at
+    construction and after each next().
+  - The saved token always points at the next real value (empty and
+    end-of-stream positions are normalized away), so a token captured
+    after the last value simply resumes an exhausted iterator.
+  - fromState assumes the same data list the token was captured against;
+    it does not validate the token beyond parsing "chunk:item".
+
+Constraints and assumptions:
+  - Values are ints; the data list is read in place and never mutated.
+
+Example:
+  ResumableIterator([[7, 8, 9], [10], [], [11, 12]]) yields
+  7, 8, 9, 10, 11, 12.
 """
 
 

@@ -1,15 +1,47 @@
-"""A simple in-memory SQL-like database for a single table of string cells.
+"""In-memory single-table store of string cells with SQL-like commands.
 
-A row is identified by a string row_key; each row maps col_key -> value.
-Commands (whitespace-separated tokens):
-  - SET row_key col_key value     set/overwrite table[row_key][col_key].
-  - GET row_key col_key           the value, or "NULL" if the cell is absent.
+Overview:
+  A tiny database holding ONE table. Each row has a string row_key and
+  maps column keys to string values (every cell is a string). Commands
+  arrive as whitespace-separated token lists and are run in order.
+
+Interface:
+  - class InMemoryTable
+      set(row_key, col_key, value) -> None
+          Create or overwrite table[row_key][col_key].
+      get(row_key, col_key) -> str
+          The stored value, or "NULL" if the row or the cell is absent.
+      select(where_col, where_value, order_by_col) -> str
+          Space-joined row_keys whose where_col equals where_value,
+          sorted by order_by_col value then row_key; "" if none match.
+      process_commands(commands) -> list[str]  (static)
+          Run a list of command strings; one output per GET/SELECT.
+
+Commands (tokens split on single spaces):
+  - SET row_key col_key value      store/overwrite a cell (no output).
+  - GET row_key col_key            emit the value, or "NULL" if absent.
   - SELECT where_col where_value order_by_col
-        row_keys where table[row][where_col] == where_value, sorted by the
-        value of order_by_col ascending (missing -> ""), ties broken by row_key
-        ascending, joined by single spaces ("" if none match).
+        emit the matching row_keys (see SELECT semantics below).
 
-process_commands returns one output string per GET and SELECT, in order.
+Semantics / rules:
+  - GET returns "NULL" when the row is unknown OR the column is unset.
+  - SELECT keeps rows where row[where_col] == where_value, then sorts
+    by the order_by_col value ascending, breaks ties by row_key
+    ascending, and joins the row_keys with single spaces ("" when
+    nothing matches).
+  - A row missing the order_by_col sorts as "" (before any real value).
+  - Ordering is lexicographic on the string value, NOT numeric, so
+    "10" sorts before "2".
+  - process_commands emits one string per GET and SELECT (SET emits
+    nothing); an unrecognized command raises ValueError.
+
+Constraints / assumptions:
+  - Values are single tokens: a command is split on spaces, so keys and
+    values cannot themselves contain spaces.
+
+Example:
+  SET r1 age 2; SET r2 age 10; SET r1 name bob; SET r2 name bob;
+  SELECT name bob age -> "r2 r1"  ("10" < "2" lexicographically).
 """
 
 

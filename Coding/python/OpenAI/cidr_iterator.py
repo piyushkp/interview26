@@ -1,10 +1,36 @@
-"""Iterate every IPv4 address in a CIDR block, in ascending order.
+"""Iterator over every IPv4 address in a CIDR block, ascending order.
 
-IPv4CIDRIterator("172.16.5.9/30") yields each address in the /30 block that
-contains the given IP - from the block's network address to its last address.
-next() returns the next address string, or None once the block is exhausted;
-hasNext() reports whether another address is still available. If the given IP
-is not the network address, the enclosing CIDR network is used.
+Overview:
+  Wraps a CIDR block "a.b.c.d/p" and walks its addresses one by one,
+  from the block's network address up to its last address (inclusive).
+  Internally an address is just a 32-bit integer and the block is the
+  contiguous run of integers sharing the top p bits.
+
+Interface:
+  - class IPv4CIDRIterator(cidr)
+      Build an iterator for the block described by cidr. If the given
+      IP is not the network address, the ENCLOSING block is used (the
+      IP is masked down to its network address before iterating).
+  - next() -> str | None
+      The next address as a dotted string, or None once the block is
+      exhausted; further calls keep returning None.
+  - hasNext() -> bool
+      True while at least one more address remains to hand out.
+
+Semantics / rules:
+  - Addresses are produced in ascending order, network first.
+  - The range is inclusive of both the network and the last address.
+  - A "/32" block yields exactly one address; a "/0" block spans the
+    whole space, 0.0.0.0 through 255.255.255.255.
+
+Constraints / assumptions:
+  - cidr is a well-formed "a.b.c.d/p" with p in 0..32; inputs are not
+    otherwise validated.
+
+Example:
+  it = IPv4CIDRIterator("172.16.5.9/30")
+  it.next() -> "172.16.5.8", then "172.16.5.9", "172.16.5.10",
+  "172.16.5.11", then None.
 """
 
 

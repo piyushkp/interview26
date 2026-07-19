@@ -1,9 +1,32 @@
-"""Social Follow Recommendations over an in-memory directed graph.
+"""Friend-of-friend follow recommendations over a directed graph.
 
-A -> B means user A follows user B. follow/unfollow mutate hash-based adjacency
-sets in O(1) average time; recommend(user_id, k) uses a friend-of-friend rule,
-ranking candidates by the number of distinct intermediate users that connect
-user_id to the candidate.
+Overview:
+  A directed edge A -> B means user A follows user B. The graph is kept
+  as hash-based adjacency sets, so follow and unfollow are O(1) average
+  and duplicate or self edges are ignored.
+
+Interface (class SocialRecommendations):
+  - follow(follower_id, followee_id) -> None
+        Add the edge follower -> followee. A self-follow (equal ids) or
+        a repeated follow is ignored.
+  - unfollow(follower_id, followee_id) -> None
+        Remove the edge if present; otherwise a no-op.
+  - recommend(user_id, k) -> list
+        Up to k suggested user ids. A candidate is anyone reachable in
+        exactly two hops (followed by someone user_id follows) who is
+        neither user_id nor already followed by user_id. Candidates are
+        ranked by the number of DISTINCT intermediate users that connect
+        user_id to them (more first); ties break by smaller id. Returns
+        [] when k <= 0 or user_id follows nobody.
+  - process_queries(queries) @staticmethod -> list
+        Replay ['follow'|'unfollow'|'recommend', a, b] tuples against a
+        fresh graph and collect one entry per 'recommend' (its list).
+        An unknown op name raises ValueError.
+
+Example:
+  queries = [['follow',1,2], ['follow',1,3], ['follow',2,4],
+             ['follow',3,4], ['recommend',1,3]]
+  process_queries(queries) -> [[4]]   # 4 is reached via both 2 and 3
 """
 
 

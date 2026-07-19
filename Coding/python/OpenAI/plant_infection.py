@@ -1,10 +1,30 @@
-"""Compute Plant Infection Time (multi-source BFS, a.k.a. "Rotting Oranges").
+"""Compute Plant Infection Time (multi-source BFS, "Rotting Oranges").
 
-Grid values: 0 = empty ground, 1 = healthy plant, 2 = infected plant,
--1 = wall/blocked. Each minute every infected plant infects its orthogonally
-adjacent healthy plants. Return the minutes until no plant can be infected, or
--1 if some healthy plant is unreachable, or 0 if there are no healthy plants to
-begin with.
+Overview:
+  A 2D grid holds plants and obstacles. Every infected plant spreads to its
+  orthogonally adjacent (up/down/left/right) healthy plants once per minute,
+  with all infected plants spreading simultaneously. Find how long until the
+  infection can no longer progress.
+
+Interface:
+  infection_time(grid) -> int
+      grid is a list of equal-length rows of ints. Returns the number of
+      minutes elapsed. The input grid is mutated in place (infected cells
+      double as the visited marker).
+
+Cell values:
+  0 = empty ground, 1 = healthy plant, 2 = infected plant, -1 = wall.
+
+Semantics / rules:
+  - Returns the minutes until no healthy plant can be infected.
+  - Returns -1 if at least one healthy plant is unreachable (walled off, or
+    with no path from any infected plant).
+  - Returns 0 when there are no healthy plants to begin with, including an
+    empty grid ([] or [[]]).
+
+Example:
+  infection_time([[2, 1, 1], [1, 1, 0], [0, 1, 1]]) -> 4
+  infection_time([[2, 1, -1], [-1, 1, 1], [1, -1, 1]]) -> -1
 """
 from collections import deque
 

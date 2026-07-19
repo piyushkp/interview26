@@ -1,10 +1,38 @@
-"""An in-memory key-value store (string keys and values) that saves and loads
-itself as JSON.
+"""In-memory string->string key-value store that (de)serializes as JSON.
 
-KVStore supports get/set/delete, plus serialize() to a JSON string and
-deserialize() to replace the contents from a JSON string, and keys() which
-returns every key in sorted order. get() returns None for a missing key, and
-delete() reports whether the key was actually there.
+Overview:
+  A thin wrapper around a single dict mapping string keys to string
+  values, with helpers to snapshot the whole store to a JSON string and
+  to reload it from one. All operations are ordinary dict work.
+
+Interface:
+  - class KVStore
+      get(key) -> str | None
+          The stored value, or None when the key is absent.
+      set(key, value) -> None
+          Insert a new pair or overwrite an existing key.
+      delete(key) -> bool
+          Remove the key; True if it existed, False if it was missing.
+      keys() -> list[str]
+          Every key in ascending sorted order.
+      serialize() -> str
+          The whole store as a JSON object string, keys sorted so the
+          output is stable/deterministic.
+      deserialize(data) -> None
+          REPLACE the store's contents with the pairs parsed from the
+          JSON string data.
+
+Semantics / rules:
+  - Keys and values are expected to be strings; get on an unknown key
+    returns None rather than raising.
+  - serialize always sorts keys, so equal stores serialize identically.
+  - deserialize discards the current contents and adopts the parsed
+    map wholesale.
+
+Example:
+  set("theme", "dark"); set("region", "eu")
+  serialize() -> '{"region": "eu", "theme": "dark"}'
+  keys()      -> ["region", "theme"]
 """
 
 import json

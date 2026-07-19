@@ -1,19 +1,51 @@
-"""A persistent key-value store with a binary-safe serialization format.
+"""Persistent key-value store with a binary-safe serialization format.
 
-Keys and values are Python str or bytes blobs. Persistence uses LENGTH-PREFIXED
-encoding (no delimiters), so keys/values may contain any byte (including '|',
-':', newlines):
-    field = [type:1][len:4 big-endian][raw bytes]
-    map   = [count:4][field key][field value] x count
+Overview:
+  Keys and values are Python str or bytes blobs. Persistence uses
+  LENGTH-PREFIXED encoding (no delimiters), so a key or value may hold
+  ANY byte (including '|', ':', spaces, newlines):
+      field = [type:1][len:4 big-endian][raw bytes]
+      map   = [count:4][field key][field value] x count
+  The type byte records whether a field was str (1) or bytes (0), so a
+  str round-trips as str (UTF-8) and bytes round-trips as bytes.
 
-  - Part 1 (simulate_part1): serialize/deserialize a snapshot to a label.
-  - Part 2 (simulate_part2): split a snapshot into size-bounded, order-
-    independent segments (each segment = [total:4][index:4][chunk]).
-  - Part 3 (simulate_part3): snapshot + append-only log with replay on restart
-    and threshold-based compaction.
+Interface (class PersistentKvStore, all @staticmethod):
+  - simulate_part1(operations) -> list
+        Run put/delete/get/serialize/deserialize ops against one live
+        map plus a fake disk (label -> blob). Returns the list of get
+        results in order (a value, or None if the key is absent).
+  - simulate_part2(max_segment_size, operations) -> list
+        Adds serialize/segment_count/reorder to Part 1. serialize splits
+        the snapshot into size-bounded segments, each stamped
+        [total:4][index:4][chunk]; reorder physically shuffles them yet
+        deserialize still rebuilds the map because the index header, not
+        position, fixes order. Returns get and segment_count results.
+  - simulate_part3(compact_threshold, operations) -> list
+        Keeps a saved snapshot plus an append-only log of (put/delete)
+        changes. 'restart' reloads the snapshot then replays the log;
+        once the log reaches compact_threshold records it is folded into
+        a fresh snapshot (compaction) and cleared. Returns get results
+        and status triples (live keys, pending log records, compactions).
+  - by(s) -> bytes: demo helper, str -> latin-1 bytes (1 char == 1 byte).
+  - py_repr(results) -> str: render a results list Python-style
+        (str -> 'x', bytes -> b'x', None -> None, tuple -> (...)).
 
-A str value round-trips as str (UTF-8) and a bytes value as bytes, so the demo
-output distinguishes 'x' (str) from b'x' (bytes).
+Semantics / rules:
+  - get on a missing (or deleted) key yields None; delete of a missing
+    key is a harmless no-op.
+  - deserialize replaces the whole live map with a decoded snapshot, so
+    it can undo puts made after that snapshot was taken.
+  - An unknown operation name raises ValueError.
+
+Constraints / assumptions:
+  - Part 2 assumes max_segment_size >= 9 so each chunk holds >= 1 byte
+    after its 8-byte header.
+  - Operations are given as sequences whose first element names the op.
+
+Example (Part 1):
+  ops = [['put','a','1'], ['get','a'], ['serialize','snap1'],
+         ['put','a','2'], ['deserialize','snap1'], ['get','a']]
+  simulate_part1(ops) -> ['1', '1']   # the second get sees the snapshot
 """
 
 

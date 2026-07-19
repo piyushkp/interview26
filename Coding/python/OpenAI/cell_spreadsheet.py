@@ -1,14 +1,36 @@
-"""A small spreadsheet whose cells are either literal integers or formulas.
+"""A small spreadsheet whose cells are literal ints or two-cell adders.
 
-A Cell is either a literal (Cell.literal(value)) or a formula that adds two
-referenced cells (Cell.formula(child1, child2)). setCell(key, cell) stores a
-cell; getCellValue(key) evaluates it: a literal is its own value, a formula is
-value(child1) + value(child2). Referencing an unknown cell or forming a cycle
-(A -> B -> A) raises EvaluationError.
+Overview:
+  Cells are stored by name. A cell is either a literal integer or a
+  formula that adds the values of two other cells (referenced by name).
+  Reading a cell resolves the whole chain of references beneath it.
+  Results are cached for speed, and editing a cell surgically invalidates
+  only the cells whose values could have changed.
 
-Evaluated values are cached; setCell(key, ...) invalidates the cache for that
-cell and everything that (transitively) depends on it, so later reads stay
-correct without recomputing untouched cells.
+Interface:
+  - Cell.literal(value) -> Cell: a cell holding the integer `value`.
+  - Cell.formula(child1, child2) -> Cell: a cell equal to
+    value(child1) + value(child2), where child1/child2 are cell names.
+  - Spreadsheet() -> a new, empty sheet.
+  - setCell(key, cell) -> None: define or redefine the cell named `key`.
+  - getCellValue(key) -> int: the literal value, or the sum for a formula,
+    resolved recursively through referenced cells.
+
+Semantics and rules:
+  - Evaluation is memoized: repeated reads of an unchanged cell are O(1).
+  - setCell invalidates the cached value of `key` and every cell that
+    transitively depends on it, so later reads stay correct while
+    untouched cells are not recomputed.
+  - Redefining a cell rewires its dependency edges before invalidating.
+
+Errors (both raise EvaluationError):
+  - a formula references a cell name that was never set (unknown cell);
+  - the references form a cycle, e.g. A -> B -> A.
+
+Example:
+  setCell("A", Cell.literal(10)); setCell("B", Cell.literal(5))
+  setCell("C", Cell.formula("A", "B")); getCellValue("C") -> 15
+  setCell("A", Cell.literal(20)); getCellValue("C") -> 25
 """
 
 

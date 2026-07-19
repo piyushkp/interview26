@@ -1,5 +1,14 @@
-"""Driver that exercises each interview module (port of OpenAi.java). Every
-module lives in its own file in this package:
+"""Aggregation driver / entry point for the interview modules (port of
+OpenAi.java).
+
+Overview:
+  This file solves no problem of its own. It is the single entry point
+  that imports every sibling interview module in this package and, from
+  main(), runs each one's demo with representative inputs, printing the
+  results. Run it directly (python3 open_ai.py) to exercise all modules at
+  once; each module also has its own smaller __main__ demo when run alone.
+
+Modules exercised (one line each):
   - social_recommendations - friend-of-friend follow recommendations.
   - plant_infection        - multi-source BFS ("Rotting Oranges").
   - ip_addressing          - IPv4/IPv6 addressing toolkit.
@@ -14,8 +23,8 @@ module lives in its own file in this package:
   - gpu_credit_ledger      - idempotent GPU credit ledger (non-negative
                              balances).
 
-Output is Python-native (True/False, quoted strings in lists, dict/bytes repr),
-so it differs cosmetically from the Java driver's output
+Output is Python-native (True/False, quoted strings in lists, dict/bytes
+repr), so it differs cosmetically from the Java driver's output
 (true/false, unquoted).
 """
 

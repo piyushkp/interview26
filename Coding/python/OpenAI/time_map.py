@@ -1,13 +1,38 @@
-"""A time-based key-value store where each key keeps a history of values
-stamped with strictly increasing timestamps, and a lookup returns the value
-that was current at (or before) a queried timestamp.
+"""A time-based key-value store: point-in-time history lookups.
 
-  - set(key, value, timestamp): record `value` for `key` at the given time.
-  - get(key, timestamp): return the value stored at the largest timestamp
-    that is <= the queried timestamp, or None if there is no such value.
+Overview:
+  Each key keeps its own history of values, every one stamped with a
+  timestamp. A read asks "what value did this key hold at time T?" and
+  returns whatever was most recently written at or before T. This is the
+  classic "snapshot" map used for versioned config, rate quotes, or
+  feature flags where past states must stay queryable.
 
-Per key, set() is called with strictly increasing timestamps, so each key's
-timestamp list stays sorted and supports binary search.
+Interface:
+  - TimeMap() -> a new, empty store.
+  - set(key, value, timestamp) -> None: append `value` for `key`, recorded
+    as effective from `timestamp` onward.
+  - get(key, timestamp) -> value or None: the value written at the largest
+    timestamp that is <= the query, or None if the key was never set or its
+    earliest timestamp is still later than the query.
+
+Semantics and rules:
+  - Per key, set() is called with strictly increasing timestamps, so each
+    key's timestamp list is already sorted and supports binary search.
+  - get() is inclusive of an exact match: a query equal to a stored
+    timestamp returns that entry's value.
+  - A query earlier than the first stored timestamp returns None; an
+    unknown key also returns None (the two cases are indistinguishable).
+  - Keys are independent: each has its own separate, ordered history.
+
+Constraints and assumptions:
+  - Timestamps are comparable (typically integers); values may be anything.
+  - Callers must honor the strictly-increasing-per-key contract; the store
+    does not re-sort or reject out-of-order writes.
+
+Example:
+  set("rate", "1.10", 2); set("rate", "1.12", 5)
+  get("rate", 1) -> None; get("rate", 4) -> "1.10"
+  get("rate", 9) -> "1.12"
 """
 
 from bisect import bisect_right

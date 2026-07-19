@@ -1,10 +1,44 @@
-"""Five self-contained IP exercises that share IPv4 parse/format helpers:
-  - parse_ipv4(ip)              validate + parse a dotted IPv4 into octets
-  - adjacent_ipv4(ip, dir)      the IPv4 one above/below
-  - cidr_range(cidr)            first + last address of a CIDR block
-  - ip_in_cidr(ip, cidr)        membership test for a CIDR block
-  - adjacent_ipv6(ip, dir)      the IPv6 one above/below (period-separated)
-No networking libraries are used - only manual parsing and arithmetic.
+"""IPv4/IPv6 toolkit built from manual parsing and bit math (no libs).
+
+Overview:
+  Five self-contained exercises over IP addresses. IPv4 helpers treat
+  an address as four decimal octets packed into a 32-bit integer; the
+  IPv6 helper treats an address as eight PERIOD-separated 4-digit hex
+  groups (compressed "::" is NOT supported). Invalid input is reported
+  by a sentinel return, never an exception.
+
+Interface (all module-level functions):
+  - parse_ipv4(ip) -> list[int]
+        The four octets, or [] if ip is not a valid dotted IPv4.
+  - adjacent_ipv4(ip, direction) -> str
+        The address one step "up" or "down"; "" on invalid ip, bad
+        direction, or over/underflow past the 32-bit ends.
+  - cidr_range(cidr) -> list[str]
+        [first, last] (network and last address) of "A.B.C.D/P", or []
+        if the address or prefix is invalid.
+  - ip_in_cidr(ip, cidr) -> int
+        1 if ip lies in cidr (inclusive), 0 if not, -1 if either input
+        is invalid.
+  - adjacent_ipv6(ip, direction) -> str
+        The address one step "up" or "down", normalized to eight
+        lowercase 4-digit hex groups joined by "."; "" on invalid input,
+        bad direction, or 128-bit over/underflow.
+
+Semantics / rules:
+  - An IPv4 octet is digits only, 0..255; leading zeros are allowed and
+    there must be exactly four octets.
+  - A CIDR prefix must be an integer 0..32; the range is derived by
+    masking (first = network, last = all host bits set).
+  - Membership and CIDR ranges are inclusive of both endpoints.
+  - direction must be exactly "up" or "down"; anything else yields "".
+  - Each IPv6 group is 1..4 hex digits (0..0xFFFF); the output always
+    re-pads every group to four lowercase hex digits.
+
+Example:
+  parse_ipv4("192.168.0.1")            -> [192, 168, 0, 1]
+  adjacent_ipv4("192.168.0.255", "up") -> "192.168.1.0"
+  cidr_range("192.168.0.0/24")   -> ["192.168.0.0", "192.168.0.255"]
+  ip_in_cidr("192.168.0.10", "192.168.0.0/24") -> 1
 """
 
 

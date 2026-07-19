@@ -1,13 +1,42 @@
-"""Invertible, binary-safe encoding for a dict[str, str].
+"""Invertible, binary-safe length-prefixed encoding of a dict[str, str].
 
-Because keys/values may contain any character (including '#', ':', '|', '=',
-spaces), a delimiter-only format is unsafe. Instead each field is
-LENGTH-PREFIXED as <len>#<content>, and after reading a length we consume
-exactly that many characters — so the content may contain anything.
+Overview:
+  Flattens a string->string map into one string and rebuilds it
+  exactly, even when keys or values contain otherwise-dangerous
+  characters such as '#', ':', '|', '=', or spaces. Every field is
+  written as <length>#<content>, so a reader takes a length and then
+  consumes exactly that many characters - the content is never scanned
+  for a delimiter and may hold anything.
 
-Format: <pair_count>#<key_len>#<key><value_len>#<value>... with pairs written
-in lexicographically sorted key order, so the output is deterministic.
-Example: {"a": "hi", "b": ""} -> "2#1#a2#hi1#b0#"; the empty map -> "0#".
+Interface (module-level functions):
+  - serialize(mapping) -> str
+        Encode the map. Pairs are written in lexicographically sorted
+        key order, so the same map always yields the same string.
+  - deserialize(data) -> dict
+        Rebuild the original map from a serialized string; raises
+        ValueError on malformed input.
+  - solution(operation, data) -> str | dict
+        Dispatch helper: "serialize" runs serialize(data),
+        "deserialize" runs deserialize(data), anything else raises
+        ValueError.
+
+Format:
+  <pair_count>#<key_len>#<key><value_len>#<value>...
+  A length is decimal digits terminated by '#'; the content that
+  follows is taken verbatim for exactly that many characters.
+
+Semantics / rules:
+  - Sorting keys makes serialize deterministic: equal maps encode to
+    byte-identical strings.
+  - Empty pieces are fine: the empty map encodes as "0#" and an empty
+    key or value contributes "0#".
+  - deserialize raises ValueError when a length is missing, a length
+    token holds a non-digit, or a field runs past the end of the input.
+
+Example:
+  serialize({"a": "hi", "b": ""}) -> "2#1#a2#hi1#b0#"
+  deserialize("2#1#a2#hi1#b0#")   -> {"a": "hi", "b": ""}
+  serialize({})                   -> "0#"
 """
 
 

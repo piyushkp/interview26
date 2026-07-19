@@ -1,14 +1,37 @@
-"""A spreadsheet that evaluates cells containing numbers or '+' formulas.
+"""A spreadsheet whose cells hold integers or '+' addition formulas.
 
-setCell(cell_id, value) stores a number or a formula (a string starting with
-'=', e.g. '=A1+B1' or '=A1+5'); getCell(cell_id) returns the cell's value.
+Overview:
+  A cell value is either an integer literal or a formula: a string
+  starting with '=' that adds cell references and/or integer literals,
+  e.g. '=A1+B1' or '=A1+5'. A reference to an unset cell counts as 0.
+  Circular references are not an error; a cell on a cycle values as
+  None.
 
-Two implementations are provided:
-  - SpreadsheetDFS (Part 1): lazy - getCell resolves dependencies on demand
-    with depth-first search; O(subtree) per read.
-  - Spreadsheet   (Part 2): eager - setCell recomputes the changed cell and
-    its downstream dependents in topological order, so getCell is O(1).
-Both detect circular references and report a cyclic cell's value as None.
+Interface (two classes, both with the same camelCase API):
+  - SpreadsheetDFS (Part 1, lazy):
+        setCell(cell_id, value) -> None   stores the parsed cell.
+        getCell(cell_id) -> int | None    evaluates on demand via a
+            depth-first walk of the formula tree; nothing is cached, so
+            each read costs O(size of the dependency subtree). A cell
+            reached again on the current path (a cycle) yields None.
+  - Spreadsheet (Part 2, eager, O(1) reads):
+        setCell(cell_id, value) -> None   stores the cell, then
+            recomputes it and its downstream dependents in topological
+            order and caches every result.
+        getCell(cell_id) -> int | None    returns the cached value in
+            O(1) (0 if the cell was never set, None if it is cyclic).
+
+Semantics / rules:
+  - A plain int or a numeric string like '5' is a constant (no refs).
+  - '+' is the only operator; whitespace around terms is ignored.
+  - Setting a cell can flip dependents into or out of a cycle; Part 2
+    keeps every cached value consistent after each setCell.
+
+Example (Part 2):
+  s = Spreadsheet()
+  s.setCell('A1', 6); s.setCell('B1', 2)
+  s.setCell('A5', '=A1+B1'); s.getCell('A5')   -> 8
+  s.setCell('A1', 10);       s.getCell('A5')   -> 12
 """
 
 from collections import deque

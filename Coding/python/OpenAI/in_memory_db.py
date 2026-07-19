@@ -1,16 +1,45 @@
-"""A tiny in-memory database over schema-less records with SQL-like queries.
+"""In-memory database of schema-less records with SQL-like SELECT queries.
 
-insert(record) stores a dict of field -> value (int, float, str, or bool)
-under an auto-assigned integer id, and updates an equality inverted index
-(field -> value -> set of ids). query(query_string) supports:
+Overview:
+  Records are plain dicts of field -> value (int, float, str, or bool)
+  with no fixed schema. Each insert is filed under an auto-assigned
+  integer id and mirrored into an equality inverted index so that
+  "field = value" filters resolve by set lookup instead of a full scan.
 
-  SELECT <*|f1,f2,...> [WHERE cond AND cond ...] [ORDER BY field [ASC|DESC]]
-  [LIMIT n]
+Interface:
+  - class InMemoryDb
+      insert(record) -> int
+          Store a COPY of the record under a fresh id (ids count up
+          from 0) and index each field=value pair; returns the new id.
+      query(query_string) -> list[dict]
+          Run a SELECT and return the matching records, each projected
+          to the requested fields, in the requested order.
 
-WHERE operators are =, !=, <, >, <=, >=; a record matches only if it HAS the
-field and the comparison holds (a missing field fails the condition). Equality
-conditions are answered from the index; the rest are scanned. ORDER BY sorts by
-a field (missing values sort last), with the record id as the final tie-break.
+Query grammar:
+  SELECT <*|f1,f2,...> [WHERE cond AND cond ...]
+         [ORDER BY field [ASC|DESC]] [LIMIT n]
+  Each cond is "field OP literal"; OP is one of =, !=, <, >, <=, >=.
+  A literal is a quoted string ('..' or ".."), true/false (bool), an
+  int, a float, or otherwise a bare string.
+
+Semantics / rules:
+  - A condition holds only if the record HAS the field AND the compare
+    is true; a missing field fails the condition, and comparing
+    incompatible types (e.g. str vs number) counts as no match.
+  - Equality (=) conditions are served from the index; other operators
+    are checked by scanning the narrowed candidate ids.
+  - SELECT * returns a full copy; a field list keeps only the requested
+    fields that the record actually has.
+  - ORDER BY sorts by the field ascending (DESC reverses); records
+    missing that field sort LAST, and the id is the final tie-break.
+  - LIMIT n keeps the first n rows after ordering.
+  - Clause keywords are matched case-sensitively as " WHERE ",
+    " ORDER BY ", and " LIMIT " with surrounding spaces.
+
+Example:
+  insert {'id':1,'name':'Alice','age':30}; insert Bob age 25;
+  query("SELECT * WHERE age > 25 ORDER BY name ASC")
+    -> [{'id': 1, 'name': 'Alice', 'age': 30}]
 """
 
 from operator import itemgetter

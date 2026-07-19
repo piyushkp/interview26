@@ -1,17 +1,44 @@
-"""Resolve the concrete return type of a generic function from its arguments.
+"""A tiny generic type system: bind type variables from a call's arguments.
 
-Types are represented as small objects:
-  - Primitive(name)   - int, float, str, bool, ...
-  - Generic(name)     - a type variable such as T, K, V (name starts uppercase)
-  - TupleType(elems)  - a bracketed list of types, e.g. [int, str]
-  - FunctionType(params, output) - a signature "[params] -> output"
+Overview:
+  Types are modeled as small tree-shaped objects. Given a function's
+  declared parameter types (which may contain generic placeholders) and
+  the concrete types of an actual call, we "unify" them position by
+  position to learn what each generic stands for, then substitute those
+  learnings into the declared return type to get the concrete result type.
 
-Each type renders to a string (a TupleType -> "[a, b]", a FunctionType ->
-"[p1, p2] -> out"). resolve_return(function, args) unifies the declared
-parameter types with the concrete argument types to bind each generic, then
-substitutes those bindings into the declared return type. Invalid calls (wrong
-argument count, primitive/shape mismatch, or a generic bound to two different
-types) raise ResolutionError.
+Interface:
+  - Primitive(name) -> a concrete named type (int, str, bool, ...).
+  - Generic(name) -> a type variable; by convention its name starts with
+    an uppercase letter (T, K, V, X).
+  - TupleType(elements) -> an ordered list of element types.
+  - FunctionType(params, output) -> a signature: a list of parameter types
+    plus one output type.
+  - Every type has render() -> str: a Primitive/Generic renders to its
+    name, a TupleType to "[a, b]", a FunctionType to "[p1, p2] -> out".
+  - parse(spec) -> a type: a list becomes a TupleType (recursively); a
+    string whose first character is uppercase becomes a Generic, otherwise
+    a Primitive.
+  - resolve_return(function, args) -> the substituted return type, a type
+    object whose render() gives the concrete result (e.g. "[bool, str]").
+
+Semantics and rules:
+  - Matching (unification) is structural: a Primitive must meet the same
+    Primitive; a TupleType must meet a TupleType of equal length, matched
+    element by element.
+  - A Generic binds to whatever concrete type sits opposite it the first
+    time it is seen; meeting a different type later is a conflict.
+  - Substitution copies the return type and swaps each bound generic for
+    its learned type; unbound generics are left as-is.
+
+Errors (all raise ResolutionError):
+  - the argument count does not match the parameter count;
+  - a primitive or tuple shape does not line up;
+  - one generic is forced to two different concrete types.
+
+Example:
+  sig = [[K, int], V, K] -> [V, K]; call with [[str, int], bool, str]
+  resolve_return(sig, args).render() -> "[bool, str]"
 """
 
 

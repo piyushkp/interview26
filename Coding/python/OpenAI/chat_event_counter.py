@@ -1,16 +1,40 @@
-"""In-memory counter for chat activity per exact (user_id, chat_id) pair.
+"""In-memory event counter for chat activity, keyed by an exact
+(user_id, chat_id) pair, over a sliding 15-minute window.
 
-process_event records one event; 
-get_count returns how many events for that
-pair fall in the inclusive 15-minute (900 s) window ending at the pair's most
-recent timestamp T, i.e. timestamps in [T - 900, T]. Returns 0 if the pair has
-no events.
+Overview:
+  Record chat events and, on demand, count how many of a pair's events
+  fall in the inclusive 900-second (15-minute) window that ends at that
+  pair's most recent event. The window is measured per pair, not by a
+  global clock.
 
-Because, for a given pair, process_event timestamps arrive non-decreasing,
-each pair's list is already sorted, so get_count is a binary search for the
-window start (no per-call sorting).
-  - process_event: O(1) amortized append.
-  - get_count:     O(log m) over that pair's m events.
+Interface (class ChatEventCounter):
+  - process_event(user_id, chat_id, timestamp) -> None
+        Record one event for the exact (user_id, chat_id) pair.
+  - get_count(user_id, chat_id) -> int
+        Let T be the pair's latest stored timestamp. Return how many of
+        the pair's events have a timestamp in [T - 900, T]. Return 0 if
+        the pair has no events.
+  - simulate(operations) -> list[int] (staticmethod)
+        Replay a list of operations and return one result per getCount,
+        in order. Each operation is a list:
+          ["processEvent", user_id, chat_id, timestamp]
+          ["getCount", user_id, chat_id]
+        Any other op kind raises ValueError.
+
+Semantics and rules:
+  - Both ends of the window are inclusive: an event exactly 900 s
+    before T is counted; one 901 s before T is not.
+  - Pairs are independent and matched exactly. Keys are length-prefixed
+    so look-alike pairs such as ("a", "bc") and ("ab", "c") never
+    collide.
+
+Constraints/assumptions:
+  - For any one pair, process_event is called with non-decreasing
+    timestamps, so each pair's list stays sorted and get_count uses a
+    binary search (bisect_left) for the window start - no re-sorting.
+
+Example:
+  processEvent(u1,c1,0), processEvent(u1,c1,900), getCount(u1,c1) -> 2.
 """
 from bisect import bisect_left
 

@@ -1,14 +1,37 @@
-"""Answer topology queries on a cluster of machines shaped as a rooted tree.
+"""Answer structural queries on a cluster of machines shaped as a
+rooted tree, given by a parent array.
 
-The tree is given as a parent array: parents[i] is the parent of node i, and
-the single node with parent -1 is the root. Node IDs are 0..n-1.
+Overview:
+  The cluster is a rooted tree where parents[i] is the parent of node
+  i and the one node whose parent is -1 is the root. Node IDs are the
+  dense range 0..n-1. From this array the class can report the node
+  count or draw the whole tree as a compact nested string.
 
-ClusterTopologyQueries(parents) builds the tree; query(command) returns a
-string:
-  - "count":    the number of nodes.
-  - "topology": a nested string of the tree. A leaf is written as its id
-                ("4"); a node with children is "id(c1,c2,...)" with children
-                in ascending id order, e.g. "0(1(3(5),4),2)".
+Interface (class ClusterTopologyQueries):
+  - ClusterTopologyQueries(parents)
+        Build the tree (each node's child list) from the parent array.
+  - query(command) -> str
+        "count":    the number of nodes, as a string.
+        "topology": a nested description of the tree. A leaf is its id
+                    ("4"); a node with children is "id(c1,c2,...)" with
+                    the children listed in ASCENDING id order, e.g.
+                    "0(1(3(5),4),2)".
+        Any other command raises ValueError.
+
+Semantics and rules:
+  - Children come out in ascending id order for free: ids 0..n-1 are
+    scanned in order and each is appended to its parent's list.
+  - An empty parent array has no root, so "count" is "0" and
+    "topology" is the empty string "".
+
+Constraints/assumptions:
+  - Exactly one node has parent -1 (the root); every other parent is a
+    valid id in 0..n-1, describing a single connected tree.
+
+Example:
+  parents = [-1, 0, 0, 1, 1, 3]
+  query("count")    -> "6"
+  query("topology") -> "0(1(3(5),4),2)"
 """
 
 
