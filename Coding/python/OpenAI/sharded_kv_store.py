@@ -1,19 +1,90 @@
-"""Simulation of a persistent sharded key-value store. Each "shard file"
-is just a string of appended records; every write is immediately
-persisted to a shard.
+"""
+Simulate a persistent, log-structured sharded key-value store. Instead of real files, each shard "file" is represented by a Python string, and the full set of shards is a list of such strings.
 
-Record encoding (keys/values are ASCII letters/digits, never '|' or ';'):
-    put record:    P|key|value;
-    delete record: D|key;
+You are given a shard_size and a list of operations. Process the operations in order, maintaining both the persisted shard strings and a live in-memory key→value map, then return what the get operations saw together with the final shard contents.
+What to implement
 
-Sharding: append a record to the last shard unless that would make it longer
-than shard_size; if it would exceed, start a new shard. (A single record is
-guaranteed to fit in a fresh shard.)
+def solution(shard_size, operations):
+    ...
 
-Operations: put, get, delete, shutdown (no-op — already persisted), and
-restore (discard the in-memory map and rebuild by replaying shards in
-creation order, ignoring any incomplete trailing fragment not ending in
-';').
+    shard_size — the maximum allowed length of any single shard string.
+    operations — a list of operation tuples (described below).
+
+Operations
+
+Each operation is a tuple whose first element names the operation:
+
+    ('put', key, value) — write a put record for key, then set the current value of key to value (overwriting any existing value).
+    ('get', key) — read the current value of key. Append the result to the list of get-results: the stored value if the key exists, otherwise None.
+    ('delete', key) — if key currently exists, write a delete record for it and remove it from the live map. If key does not exist, do nothing (no record is written).
+    ('shutdown',) — a no-op, included only for API completeness. Every write is already persisted to the shard strings, so there is nothing to flush.
+    ('restore',) — discard the entire in-memory map and rebuild it by replaying the shard contents from the first shard to the last (see Restore below).
+
+Record encoding
+
+Each put and delete is encoded as a single semicolon-terminated record:
+
+    Put record: P|key|value;
+    Delete record: D|key;
+
+The size of a record is its string length. Keys and values are ASCII (letters and digits only), so a character equals one byte, and keys/values never contain | or ;.
+Sharding rule (where each new record is written)
+
+Maintain shards as an ordered list, appended to in creation order. When a new record must be written:
+
+    If appending it to the last shard would keep that shard's length at most shard_size, append it there (the last shard's new length must be ≤ shard_size).
+    Otherwise (appending would make the last shard's length exceed shard_size), create a new shard and write the record into it.
+
+If there are no shards yet, the first record creates the first shard. Because every individual record's encoded length is at most shard_size, a record always fits in a fresh shard. If no records are ever written, the shard list is empty ([]).
+Restore rule (replaying shards)
+
+On ('restore',), throw away the current in-memory map and rebuild it from scratch by scanning the shards in creation order (first to last):
+
+    Split each shard on the ; terminator and replay each complete record in order.
+    A P|key|value; record sets key to value.
+    A D|key; record removes key.
+    If a shard ends with an incomplete fragment that is not terminated by ;, ignore that trailing fragment.
+
+Because records are replayed in order, the last write to a key wins, so the rebuilt map matches the live state that produced the shards.
+Return value
+
+Return a tuple (get_results, shards) where:
+
+    get_results is the list of results from every get operation, in the order they occurred (each entry is a value string or None).
+    shards is the final list of shard strings.
+
+Constraints
+
+    0 <= len(operations) <= 20000
+    1 <= shard_size <= 10000
+    Keys and values are non-empty ASCII strings of letters and digits only, so they never contain | or ;.
+    The encoded length of every single put or delete record is at most shard_size.
+
+Examples
+Example 1
+
+Input
+    (10, [('put', 'a', '1'), ('put', 'b', '22'), ('get', 'a'), ('put', 'a', '333'), ('get', 'a'), ('restore',), ('get', 'b')])
+Output
+    (['1', '333', '22'], ['P|a|1;', 'P|b|22;', 'P|a|333;'])
+Notes
+    Each write would overflow the current shard, so three shards are created. After restore, the latest value of 'a' is '333' and 'b' is still '22'.
+
+Example 2
+
+Input
+    (20, [('put', 'ab', 'x'), ('put', 'c', 'yz'), ('delete', 'ab'), ('get', 'ab'), ('restore',), ('get', 'c'), ('get', 'ab')])
+Output
+    ([None, 'yz', None], ['P|ab|x;P|c|yz;D|ab;'])
+Notes
+    All records fit in one shard. The delete operation writes a tombstone for 'ab', so it is missing both before and after restore.
+
+Constraints
+
+    0 <= len(operations) <= 20000
+    1 <= shard_size <= 10000
+    Keys and values are non-empty ASCII strings containing only letters and digits, so they never contain '|' or ';'
+    The encoded length of every single put or delete record is at most shard_size
 """
 
 
