@@ -49,6 +49,12 @@ def _event_order(event):
 #   recompute from scratch every time, a slip that shows up late but is
 #   back-dated changes future answers without
 #   rewriting answers we already gave.
+#   Data structures used:
+#     - dict mapping user -> list of event objects in arrival order -
+#       groups events per user and keeps arrival order for stable
+#       tie-breaks.
+#     - a list sorted per query for just the eligible subset - avoids
+#       sorting everything.
 class CreditLedger:
 
     def __init__(self):

@@ -17,6 +17,11 @@ from collections import deque
 #   catch fire. If every healthy plant was reached, the answer is the minutes
 #   it took; if a plant is walled off and can never be reached, we return -1;
 #   and if there were no healthy plants to begin with, it takes 0 minutes.
+#   Data structures used:
+#     - deque - the BFS frontier; O(1) popleft spreads outward
+#       level-by-level (minute-by-minute).
+#     - grid (2D list) - reused as the visited marker; overwriting
+#       infected cells avoids a separate visited set.
 def infection_time(grid):
     """Minutes until every healthy plant is infected via multi-source BFS,
     -1 if some healthy plant is unreachable, or 0 if none need infecting."""

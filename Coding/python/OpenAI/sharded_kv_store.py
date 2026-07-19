@@ -98,6 +98,10 @@ Constraints
 #   to the last and apply each line in order, so the last write wins and
 #   deletes take effect. A half-written line at the very end (missing its
 #   ';') is skipped.
+#   Data structures used:
+#     - dict - the current values; answers get in O(1).
+#     - list of append-only string shards - the persisted,
+#       replayable write log.
 class ShardedKvStore:
 
     def __init__(self, shard_size):

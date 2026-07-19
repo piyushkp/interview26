@@ -34,6 +34,9 @@ def _select_sort_key(order_value_and_row_key):
 #       row's name).
 #   To sort safely we first pair each matching row with the value we sort on,
 #   sort those pairs, then read the names back out in order.
+#   Data structures used:
+#     - dict of dicts (row_key -> {col_key: value}) - O(1) cell get/set;
+#       iterate the rows for SELECT then sort the matches.
 class InMemoryTable:
 
     def __init__(self):

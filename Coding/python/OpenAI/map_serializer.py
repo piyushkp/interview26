@@ -25,6 +25,10 @@ Example: {"a": "hi", "b": ""} -> "2#1#a2#hi1#b0#"; the empty map -> "0#".
 #       that many characters, and rebuild each key and value.
 #   It is like tearing off exactly the number of squares of tape someone told
 #   you to take, instead of guessing where one piece stops and the next begins.
+#   Data structures used:
+#     - a dict for the map, with keys sorted for deterministic output.
+#     - a single-element list used as a movable read cursor while parsing -
+#       lets a helper advance the parse position by reference.
 def serialize(mapping):
     """Serialize a map to the length-prefixed format (keys sorted
     lexicographically)."""

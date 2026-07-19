@@ -29,6 +29,9 @@ _MAX_LINK_HOPS = 1000   # safety net against self-growing link chains
 #     - '.' means stay put,
 #     - '..' pops the top folder (go up); rising above the root is illegal,
 #       so we return None.
+#   Data structures used:
+#     - a list used as a stack of path folders - push a name, pop
+#       on '..' (exactly stack behavior).
 def cd_part1(current_dir, new_dir):
     """Part 1: resolve '.', '..', and absolute '/'; None above root."""
     # p = total path length. Time: O(p) - one pass. Space: O(p) - the stack.
@@ -81,6 +84,10 @@ def _join(components):
 # Approach (in plain terms):
 #   Same as Part 1, but first swap a leading '~' for the home folder. That
 #   turns a '~' path into an ordinary absolute path; the rest is unchanged.
+#   Data structures used:
+#     - the same folder stack; a leading '~' is swapped with plain
+#       string ops - reuse the stack, '~' only changes the starting
+#       point.
 def cd_part2(current_dir, new_dir):
     """Part 2: Part 1 plus '~' expanding to HOME (an absolute path)."""
     # p = total path length. Time: O(p). Space: O(p) - the stack.
@@ -113,6 +120,10 @@ def _expand_home(path):
 #   LONGEST link key that matches the front of the path, swap that prefix for
 #   the link's target, and repeat (so links pointing to other links unwind).
 #   Remember every path seen; if one comes back, the links loop -> None.
+#   Data structures used:
+#     - a dict (soft_links) for O(1) link lookup, plus string
+#       prefix checks to pick the longest matching key.
+#     - a set of already-seen paths for O(1) cycle detection.
 def cd_part3(current_dir, new_dir, soft_links=None):
     """Part 3: Part 2 plus symbolic-link resolution (longest match, cascade,
     cycle detection -> None)."""

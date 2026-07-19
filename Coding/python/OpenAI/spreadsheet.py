@@ -61,6 +61,10 @@ def _parse_cell_value(value):
 #   but costs O(size of the dependency subtree).
 #   A 'visiting' set tracks the cells on the current path; if we reach one
 #   that is already on the path, the formulas loop, so we return None.
+#   Data structures used:
+#     - dict - maps each cell to a number or parsed formula.
+#     - set - the cells on the current DFS path, for cycle
+#       detection.
 class SpreadsheetDFS:
     """Part 1: lazy evaluation. getCell resolves dependencies on demand with
     DFS and detects circular references (returns None for a cyclic cell)."""
@@ -120,6 +124,12 @@ class SpreadsheetDFS:
 #   shared upstream cell is recomputed once, before any cell that needs it.
 #   If some cells in that set can never be ordered, they form a loop, so we
 #   mark them None (a circular-reference indicator).
+#   Data structures used:
+#     - dicts - forward references, constants, and reverse
+#       dependents (adjacency lists).
+#     - dict - a value cache that makes getCell O(1).
+#     - deque - Kahn's topological sort queue that orders the
+#       recompute.
 class Spreadsheet:
     """Part 2: O(1) getCell. All work happens in setCell, which recomputes the
     changed cell and its downstream dependents in topological order and caches

@@ -24,6 +24,11 @@ from bisect import bisect_left
 #   quick binary search to find where the cutoff lands. Everything from that
 #   spot to the end is inside the window, so the answer is how many stamps
 #   come after.
+#   Data structures used:
+#     - dict mapping the (user, chat) key -> a list of timestamps kept
+#       in sorted (non-decreasing) order - O(1) grouping/append.
+#     - binary search (bisect) over that already-sorted list - counts
+#       the window in O(log m) with no re-sorting.
 class ChatEventCounter:
 
     def __init__(self):

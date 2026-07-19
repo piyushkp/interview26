@@ -99,6 +99,11 @@ def _attack_message(attacker, defender, damage, modifier):
 #   monsters loses. Before each hit we check the current pair: if neither can
 #   dent the other (both would deal 0 damage), the fight is stuck, so we stop
 #   and call it a stalemate instead of looping forever.
+#   Data structures used:
+#     - two ordered lists of monsters, each with an integer index
+#       pointer to the current champion - the pointer advances to
+#       the next monster on defeat.
+#     - a list that accumulates the event log in order.
 def battle(team1, team2):
     """Simulate team1 vs team2 (team1 attacks first). Returns an Outcome with
     the winner's name and an event log, or a stalemate Outcome if the fight

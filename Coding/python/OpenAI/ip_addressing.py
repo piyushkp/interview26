@@ -23,6 +23,11 @@ No networking libraries are used - only manual parsing and arithmetic.
 #     - membership: check whether an address falls between that street's first
 #       and last address.
 #   It is all plain integer and bit-mask math - no networking libraries.
+#   Data structures used:
+#     - fixed-size lists of integer octets (4) or hex groups (8) - makes
+#       per-part validation simple.
+#     - a single integer used as a 32-bit mask/value - turns range and CIDR
+#       checks into simple bit math.
 
 
 # ---------- Part 1: validate & parse IPv4 ----------

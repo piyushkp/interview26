@@ -24,6 +24,11 @@ def _candidate_rank(item):
 #   suggestion. We skip yourself and anyone you already follow. Finally we hand
 #   back the top k strangers, most points first, breaking ties by the smaller
 #   id so the answer is always predictable.
+#   Data structures used:
+#     - a dict mapping user -> set of followees (adjacency list) -
+#       set gives O(1) follow/unfollow and automatic de-duplication.
+#     - a dict counting candidate -> number of mutual intermediaries
+#       - ranks friend-of-friend suggestions.
 class SocialRecommendations:
 
     def __init__(self):

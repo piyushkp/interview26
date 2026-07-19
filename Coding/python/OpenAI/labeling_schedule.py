@@ -27,6 +27,10 @@ list if no valid schedule exists.
 #   No schedule is possible when k distinct tasks cannot fit (k > total_task);
 #   when k is 0 there is simply nothing to schedule, so an empty list is the
 #   answer.
+#   Data structures used:
+#     - a plain list that accumulates the [task, model, human] triples,
+#       filled by modulo (rotation) index arithmetic - no auxiliary
+#       structure needed since the schedule is produced directly in order.
 def any_schedule(total_task, total_model, total_human, k):
     """Part 1: any valid schedule. Each human gets k distinct tasks; the
     reference rotates each human's starting task by the human index (human i

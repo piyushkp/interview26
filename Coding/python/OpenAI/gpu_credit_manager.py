@@ -46,6 +46,10 @@ def _batch_end(batch):
 #       before they expire and go to waste.
 #   Every request tells us its own time, so even if requests arrive out of
 #   order, we simply check which cards are valid at that moment.
+#   Data structures used:
+#     - a list of credit-batch objects - append-only; each charge
+#       filters the currently-active batches and sorts them by soonest
+#       expiry.
 class GpuCreditManager:
 
     def __init__(self):

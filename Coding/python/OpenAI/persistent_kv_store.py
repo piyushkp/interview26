@@ -154,6 +154,11 @@ def _join_segments(segments):
 #       recent changes. On restart, load the snapshot then re-apply the
 #       log. When the log grows past a threshold, fold everything into a
 #       fresh snapshot (compaction) and clear the log.
+#   Data structures used:
+#     - dict - the in-memory key/value store.
+#     - bytearray - length-prefixed, binary-safe encoding.
+#     - lists - the on-disk segments and the pending append-only
+#       log for replay.
 class PersistentKvStore:
 
     @staticmethod

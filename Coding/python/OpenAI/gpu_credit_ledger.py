@@ -23,6 +23,10 @@ processed event_id's first result.
 #       handled and the yes/no answer we gave. If the same ID shows up again we
 #       simply repeat that answer and change nothing - like ignoring a
 #       duplicate payment-confirmation email.
+#   Data structures used:
+#     - two dicts: balances (tenant -> balance) and processed
+#       (event_id -> first result) - O(1) balance reads and O(1)
+#       idempotency lookups.
 class GpuCreditLedger:
 
     def __init__(self):
