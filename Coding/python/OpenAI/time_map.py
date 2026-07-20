@@ -35,8 +35,6 @@ Example:
   get("rate", 9) -> "1.12"
 """
 
-from bisect import bisect_right
-
 
 # Approach (in plain terms):
 #   Think of each key as having its own dated logbook. Every time you set a
@@ -51,8 +49,8 @@ from bisect import bisect_right
 #       in each key's logbook.
 #     - a parallel dict from key to a list of values - the value written at
 #       each of those timestamps (same position means the same entry).
-#     - binary search (bisect_right) - finds the newest timestamp <= the
-#       query in logarithmic time.
+#     - binary search (a hand-written loop) - finds the newest timestamp
+#       <= the query in logarithmic time.
 class TimeMap:
 
     def __init__(self):
@@ -75,7 +73,16 @@ class TimeMap:
         times = self._times.get(key)
         if not times:
             return None
-        idx = bisect_right(times, timestamp) - 1
+        # Rightmost index whose timestamp is <= the query (bisect_right - 1):
+        # narrow [lo, hi) until lo is the first index with times[lo] > query.
+        lo, hi = 0, len(times)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if times[mid] <= timestamp:
+                lo = mid + 1
+            else:
+                hi = mid
+        idx = lo - 1
         if idx < 0:
             return None
         return self._values[key][idx]
