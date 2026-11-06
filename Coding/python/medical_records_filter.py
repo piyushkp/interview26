@@ -27,6 +27,10 @@ def fetch_all(url, get=requests.get, max_pages=10_000, retries=3):
     raise RuntimeError("no empty page found; stopping to avoid an endless loop")
 
 
+def get_timestamp(record):
+    return record["timestamp"]
+
+
 def filter_records(records, conditions, ratio=1.1):
     # Pass 1: records whose weight is above ratio * average of the patient's earlier weights.
     by_patient = defaultdict(list)
@@ -35,7 +39,7 @@ def filter_records(records, conditions, ratio=1.1):
 
     heavy = set()
     for visits in by_patient.values():
-        visits.sort(key=lambda record: record["timestamp"])  # ISO timestamps sort as text
+        visits.sort(key=get_timestamp)  # ISO timestamps sort as text
         total = count = 0
         for record in visits:
             try:
