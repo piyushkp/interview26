@@ -239,6 +239,28 @@ Story: Competing priorities (security, Postgres, COSMIC, EUDB, and on-call)
 
 ---
 
+## 📊 Impact Statements: "Accomplished [X], as measured by [Y], by doing [Z]"
+
+Use these for the application "data" question and as the opening line of a story. Every number comes from your Connect history; `[__]` marks a figure to look up. Don't claim zero CVEs or M365 compliance: those are goals, not results.
+
+| # | Accomplished [X] | Measured by [Y] | By doing [Z] |
+|---|---|---|---|
+| 1 | Upgraded PostgreSQL across Viva Engage, deferred for years because of outage risk | **Zero production issues across 7 SLA clusters**; incidents down [__]; replication lag eliminated | Production proof of concept, an options document that aligned three senior principals, a pipeline for parallel upgrades |
+| 2 | Cut latency for an AI embeddings workload | **66% lower latency, 10% more user clicks** | Memory-configuration tuning, scaling Elasticsearch with new hardware |
+| 3 | Removed Elasticsearch toil | Cluster creation **days → hours**; secret rotation **weeks → minutes**; footprint **60% smaller** | Moving to AKS with one-click workflows, upgrading to ES8 so Viva Answers could ship semantic search |
+| 4 | Rolled out ONECERT certificates for Elasticsearch | **All environments, no customer outage** | Designing and implementing the server-side and client-side changes |
+| 5 | Delivered EUDB split routing | **Within the estimated time**; engineers able to support routing from 1 to [__] | Designing split routing, fixing an empty-tenant-ID bug, coaching a teammate on API design and code review |
+| 6 | Fixed intermittent read failures | Failed queries from [__] to [__] | Tracing app → pooler → replicas, finding the health check ignored disk availability, adding automatic removal of faulty replicas |
+| 7 | Moved storage infrastructure to managed identities (MSI) | [__] resources migrated; status reporting handed to a teammate | Changing storage accounts, service principals and deploy pipelines |
+
+Gaps interviewers will probe (your manager asked for baselines too): incident counts before and after the Postgres upgrade, number of service teams that tested, failed-query counts for the replica fix, and any figure for the SAGE tool or AI Copilot demo (none in the history, so they are left out).
+
+**Ready-to-paste (about 150 words):**
+
+> In my current infrastructure role, I upgraded PostgreSQL across Viva Engage, a migration deferred for years because a failure could take the product down, with **zero production issues across 7 customer-facing clusters**, eliminating replication lag. I did this by running a proof of concept on production, aligning three senior principals with an options document, and building automation that upgraded clusters in parallel. I also improved an embeddings workload with **66% lower latency and 10% more user clicks** through memory tuning, and moved Elasticsearch to Kubernetes, cutting **cluster creation from days to hours**, **secret rotation from weeks to minutes**, and the footprint by **60%**. Throughout, I focused on team scale: I coached engineers to own the testing workstream and the routing service, so critical systems no longer depend on one person.
+
+---
+
 ## 🎙️ 2-Minute Spoken Scripts (Top 5 Stories)
 
 Read these aloud and time yourself. Each is about 250–300 words (~2 minutes). Use your own words in the interview; these are a rehearsal base, not something to memorize.

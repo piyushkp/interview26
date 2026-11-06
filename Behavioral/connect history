@@ -1,0 +1,1328 @@
+Reflect on the past
+Prompt:
+What results did you deliver, and how did you do it?
+Employee Response:
+WHAT (Impact / Results Delivered)
+Delivered a successful PostgreSQL upgrade across all Viva Engage infrastructure clusters, resulting in improved system stability and performance.
+PostgreSQL upgrade drove elimination of replication lag and reduction in production incidents, materially improving reliability and customer experience.
+PostgreSQL upgrade accelerated indexing performance, reducing latency and improving data throughput.
+Executed Ubuntu upgrades on HDB clusters (STAGE), strengthening platform consistency, security posture, and upgrade readiness.
+Resolved ambiguity around VENT lag issues, driving alignment that the root cause was service-side event consumption, not infrastructure.
+Advanced platform evolution by producing a VENT/Kafka improvement and deprecation design, enabling more scalable and maintainable eventing architecture.
+Scaled Elasticsearch infrastructure with new hardware to support embeddings workloads, improving performance and capacity for AI-driven scenarios.
+Implemented the SAGE tool as part of FHL, enabling future improvements in on-call efficiency and self-service debugging, while reducing reliance on SMEs.
+HOW (Approach / Behaviors / Leadership Impact)
+Led complex, cross-cluster upgrades end-to-end, coordinating across teams while maintaining high standards for reliability, quality, and zero/low production disruption.
+Applied root-cause-driven thinking to separate infrastructure vs. service ownership issues, improving organizational clarity and decision-making.
+Proactively educated and influenced partner teams, building trust and ensuring issues were addressed at the correct layer.
+Focused on long-term architectural improvements (VENT/Kafka design) rather than short-term fixes, aligning with scalability and maintainability goals.
+Demonstrated ownership and accountability by driving critical infrastructure upgrades and ensuring measurable post-deployment impact.
+Invested in operational excellence, improving on-call experience through tooling (SAGE) and reducing mean-time-to-resolution (MTTR).
+Supported AI readiness by scaling Elasticsearch for embeddings use cases, aligning infrastructure with evolving product needs.
+Maintained a strong emphasis on security, reliability, and performance during all upgrade and scaling efforts.
+Prompt:
+Reflect on recent setbacks - what did you learn and how did you grow?
+Employee Response:
+Identified gaps in the Ubuntu upgrade process that could have been caught earlier, and used those learnings to improve validation, pre-checks, and rollout readiness for future upgrades.
+Recognized missed early signals in the Ubuntu upgrade process, and strengthened my approach by adding more rigorous pre-validation and risk assessment to prevent similar issues.
+Manager comments
+Piyush has delivered strong impact this cycle, particularly through leading the PostgreSQL upgrade across all Viva Engage clusters. This was a complex, cross-engineering effort requiring coordination across multiple teams, and he navigated it effectively. The outcome—elimination of replication lag, reduction in production incidents, and improved performance—demonstrates clear, measurable improvements to system reliability and customer experience. He also continued to invest in longer-term platform health through efforts like the VENT/Kafka design and scaling Elasticsearch to support emerging AI scenarios.
+
+From a leadership perspective, Piyush shows strength in driving large infrastructure initiatives end-to-end, maintaining a high bar for reliability, and partnering effectively across organizational boundaries. His ability to separate infrastructure vs. service ownership concerns and influence partner teams helped bring clarity to complex issues and ensured the right problems were addressed at the right layer.
+
+That said, the Ubuntu upgrade setbacks highlight an important growth area. While I appreciate the acknowledgment of missed early signals, the current reflection is still too high-level and does not clearly translate into specific, repeatable changes in execution. Going forward, I expect Piyush to define and operationalize concrete mechanisms to prevent similar gaps—such as explicit pre-flight validation checklists, clearer rollout stage gates, defined success/failure criteria, and earlier signal detection tied to metrics and automated alerts. The focus should be on making these learnings systematic and durable, not just situational.
+
+Overall, Piyush is performing strongly and operating at the level expected for his role, particularly in driving high-impact infrastructure changes. The next step in his growth is to strengthen rigor and predictability in execution by turning lessons learned into well-defined, repeatable processes that can be applied consistently across future upgrades.
+
+
+Plan for the future
+Prompt:
+What are your goals for the upcoming period?
+Title for goal number one :Security work
+Goal #1. Security work
+Employee Response:
+"Reduce Viva Engage infrastructure CVE count to zero by Q3 2026 through systematic vulnerability remediation"
+
+"Achieve M365 compliance certification for storageland by Q2 2026"
+"Complete security hardening for storageland including reduce CVEs"
+Title for goal number two :OS upgrade
+Goal #2. OS upgrade
+Employee Response:
+"Complete PostgreSQL OS upgrade to 25.04 across all envs by Q2 2026 with zero customer-impacting incidents"
+"Document upgrade procedures and train 2 team members to reduce SME dependency "
+"Define and gain approval for Postgres M365 compliance path by 04/02/2026, including all envs"
+
+Title for goal number three :Engineering Excellence
+Goal #3. Engineering Excellence
+Employee Response:
+Improving the reliability and performance of Viva Engage
+Automating the infrastructure to minimize manual work and maintaining high availability
+Contribute to cross-organization activities
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+contribute to Managed stamp project
+To measure cross-org activities
+"Participate in 5 design spec reviews per quarter"
+"Support hiring loops contributing to company-level talent acquisition"
+"Deliver at least one demo per month"
+
+
+Title for goal number four :AI & Mentoring
+Goal #4. AI & Mentoring
+Employee Response:
+Applying learnings from recent challenges (proactive planning, clear communication)
+"Implement  AI-powered automation solutions that reduce manual operational work"
+"Mentor 2 team members on Postgres / elasticsearch, measuring success through their ability to independently handle storageland work"
+
+Title for goal number five :Improve Vent / Deprecate Kafka
+Goal #5. Improve Vent / Deprecate Kafka
+Employee Response:
+Deprecate Kafka from the Viva Engage infrastructure and enhance VENT capabilities to deliver a more reliable, observable, and well-alerted eventing system.
+Prompt:
+How will your actions and behaviors help you reach your goals?
+Employee Response:
+My focus will be on applying the learnings from recent challenges to strengthen planning, communication, and execution across projects. I will ensure proactive alignment with partner teams, maintain clear documentation, and establish early-stage validation environments to reduce risks and improve delivery quality.
+
+I plan to continue leveraging AI tools and automation to drive efficiency, reliability, and innovation in our workflows. By maintaining transparent communication with leadership during critical phases and mentoring teammates to take ownership, I’ll build stronger team resilience and collaboration.
+
+These actions will help me achieve my goals of delivering secure, high-quality, and scalable solutions while demonstrating growth mindset, accountability, and customer obsession.
+Manager comments
+Piyush has set a strong and relevant set of goals that align well with our top priorities around security, platform modernization, and engineering excellence. The focus on driving CVEs to zero, achieving M365 compliance, and completing the PostgreSQL OS upgrade across all environments reflects the right level of ownership for critical infrastructure reliability and compliance.
+
+The security and OS upgrade goals are particularly well-defined and outcome-oriented. I appreciate the emphasis on zero customer-impacting incidents and reducing SME dependency through documentation and training as both are important for improving operational resilience and team scalability.
+
+That said, across several goals—particularly Engineering Excellence, AI/automation, and VENT/Kafka evolution—there is an opportunity to improve specificity and execution clarity. Some of the goals are currently a mix of aspirations, metrics, and activities without a clear throughline on how success will be measured end-to-end. For example, defining error budgets and targeting a 5% YoY reduction is directionally correct, but it will be important to clearly establish ownership, baselines, and enforcement mechanisms to ensure this translates into real reliability improvements.
+
+Similarly, goals around automation, AI adoption, and Kafka deprecation would benefit from more concrete milestones, intermediate deliverables, and success criteria. Given the scale and cross-team dependencies of these efforts, I expect to see clearer sequencing (design → alignment → incremental rollout), explicit risk management, and defined checkpoints to ensure steady progress rather than large end-state goals alone. This don't need to be listed out in this Connect, but they need to be part of the delivery.
+
+On the “how,” the focus on applying learnings from recent challenges, especially around proactive planning, validation, and communication is the right direction. However, as discussed in prior feedback, the key will be turning these into explicit, repeatable mechanisms. This includes things like formal stage gates for upgrades, standardized validation frameworks, early signal detection with metrics/alerts, and clearly defined partner engagement models. These should be embedded into the execution of these goals, not treated as general intent.
+
+Overall, this is a solid and well-aligned goal set. The next step is to increase rigor by making the plans more operationally explicit—defining clear milestones, measurable success criteria, and repeatable execution mechanisms that ensure predictable delivery across complex, cross-team initiatives.
+
+Reflect on the past
+Prompt:
+What results did you deliver, and how did you do it?
+Employee Response:
+I successfully led the PostgreSQL upgrade project and delivered it without any production issues. This involved close coordination with multiple engaged teams to align on testing, communication, and rollout efforts. Despite initial concerns about timelines and testing, I implemented an automation pipeline that enabled parallel upgrades across 7 SLA clusters, significantly reducing outage time while maintaining security and reliability standards.
+
+I mentored Amruta on taking ownership of the Postgres upgrade testing effort, guiding her on coordinating communication and maintaining test case tracking via spreadsheets, which strengthened cross-team collaboration and accountability.
+
+I also proposed memory configuration optimizations for embeddings, achieving a 66% latency improvement and a 10% increase in user clicks.
+
+During infrastructure request investigations, I identified Python dependency issues impacting deployments and, during demo day, showcased how service engineers could leverage AI Copilot to diagnose and resolve such issues proactively — reducing dependency on Infra requests and improving overall efficiency and quality.
+
+I partnered with the EUDB relocation team to resolve a routing issue affecting Teams Q&A.
+
+
+Prompt:
+Reflect on recent setbacks - what did you learn and how did you grow?
+Employee Response:
+During the PostgreSQL upgrade project, I faced challenges that helped me grow. The rollback testing took longer than expected, and there was confusion among service teams on their roles. I learned that better upfront planning, clearer communication, and maintaining a fully functional stage environment can make future efforts smoother.
+
+When a non-SLA upgrade failed due to Azure API issues, I realized I could have improved communication with leadership by providing clearer updates on mitigation steps and timelines.
+
+Additionally, a last-minute Azure core shortage could have been avoided with more proactive resource tracking.
+
+These experiences strengthened my planning, communication, and operational readiness, reinforcing a growth mindset and improving my ability to manage complex, cross-team initiatives effectively.
+
+Manager comments
+Outstanding Execution on Critical Infrastructure
+Your leadership of the PostgreSQL upgrade project represents exactly the kind of high-impact, technically excellent work that drives our organization forward. Delivering this complex upgrade across 7 SLA clusters without any production issues is a significant achievement that required deep technical expertise, strong project management, and effective cross-team coordination. The automation pipeline you built to enable parallel upgrades demonstrates the kind of systems thinking that creates lasting value and future upgrades will benefit from your investment here.
+
+Force Multiplication Through Mentorship and Innovation
+
+Beyond the immediate technical execution, I'm particularly impressed by how you amplified impact:
+
+Mentoring Amruta on the testing effort shows leadership beyond your individual contributions. Helping her develop coordination and communication skills while maintaining accountability through structured tracking is exactly how we build organizational capability.
+The embeddings memory optimization (66% latency improvement, 10% user click increase) demonstrates your ability to identify and deliver customer-facing impact, not just infrastructure improvements. This kind of performance work directly affects user experience.
+Your Demo Day presentation on using AI Copilot for dependency diagnosis is a perfect example of "teach people to fish" thinking. Enabling service engineers to self-diagnose reduces toil for the Infra team while improving overall engineering quality and velocity.
+Growth Mindset in Action
+
+Your reflection on setbacks shows exceptional maturity and self-awareness. Rather than deflecting or making excuses, you took ownership of what could have been better:
+
+Recognizing that rollback testing and role clarity needed better upfront planning
+Acknowledging that communication with leadership during the non-SLA failure could have been more proactive
+Identifying that resource tracking could have prevented the Azure core shortage
+This is exactly the growth mindset we value at Microsoft. You're extracting concrete learnings and applying them to improve future execution. The specific action items you identified as better planning, clearer communication, maintaining functional stage environment, proactive resource tracking do show you're not just reflecting, but preparing to execute better next time.
+
+Areas to Continue Developing
+
+As you continue to grow your impact, consider:
+
+Proactive stakeholder management: You recognized the leadership communication gap during the non-SLA failure. In complex projects, establish regular update cadences with stakeholders before issues arise, not just when things go wrong. This builds trust and makes it easier to navigate challenges when they occur.
+Risk identification and mitigation: The Azure core shortage and rollback testing timeline issues suggest opportunities to build more comprehensive risk assessments upfront. For future projects of similar scope, consider:
+Creating a pre-mortem exercise to identify potential failure modes
+Building explicit contingency plans for high-risk dependencies
+Socializing risks early and often with leadership
+Documentation and knowledge transfer: The automation pipeline and testing framework you built are valuable assets. Ensure they're well-documented so others can maintain and extend them, multiplying your impact beyond this specific project.
+Expanding influence: You're already demonstrating leadership through mentorship and cross-team collaboration. Look for opportunities to influence technical direction and standards more broadly as your expertise positions you well to shape how we approach future infrastructure initiatives.
+Looking Forward
+
+Your work this cycle exemplifies solid performance. You delivered significant business impact through the "what" (successful upgrade, performance improvements, reduced operational toil) and consistently modeled Microsoft's culture through the "how" (mentorship, collaboration, growth mindset, accountability for setbacks).
+
+I'm excited to see how you build on this momentum. Keep demonstrating this level of ownership, continue sharing your learnings with the team, and don't hesitate to raise your hand for high-visibility, high-impact projects. You've earned the trust and credibility to take on even more strategic initiatives.
+
+Great work this cycle, thank you for your contributions to the team's success.
+
+
+Plan for the future
+Prompt:
+What are your goals for the upcoming period?
+Title for goal number one :Security work
+Goal #1. Security work
+Employee Response:
+"Reduce Viva Engage infrastructure CVE count to zero by Q3 2026 through systematic vulnerability remediation"
+
+"Achieve M365 compliance certification for storageland by Q2 2026"
+"Complete security hardening for storageland including reduce CVEs"
+Title for goal number two :OS upgrade
+Goal #2. OS upgrade
+Employee Response:
+"Complete PostgreSQL OS upgrade to 25.04 across all envs by Q2 2026 with zero customer-impacting incidents"
+"Document upgrade procedures and train 2 team members to reduce SME dependency "
+"Define and gain approval for Postgres M365 compliance path by 04/02/2026, including all envs"
+
+Title for goal number three :Engineering Excellence
+Goal #3. Engineering Excellence
+Employee Response:
+Improving the reliability and performance of Viva Engage
+Automating the infrastructure to minimize manual work and maintaining high availability
+Contribute to cross-organization activities
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+contribute to Managed stamp project
+To measure cross-org activities
+"Participate in 5 design spec reviews per quarter"
+"Support hiring loops contributing to company-level talent acquisition"
+"Deliver at least one demo per month"
+
+
+Title for goal number four :AI & Mentoring
+Goal #4. AI & Mentoring
+Employee Response:
+Applying learnings from recent challenges (proactive planning, clear communication)
+"Implement  AI-powered automation solutions that reduce manual operational work"
+"Mentor 2 team members on Postgres / elasticsearch, measuring success through their ability to independently handle storageland work"
+
+Prompt:
+How will your actions and behaviors help you reach your goals?
+Employee Response:
+My focus will be on applying the learnings from recent challenges to strengthen planning, communication, and execution across projects. I will ensure proactive alignment with partner teams, maintain clear documentation, and establish early-stage validation environments to reduce risks and improve delivery quality.
+
+I plan to continue leveraging AI tools and automation to drive efficiency, reliability, and innovation in our workflows. By maintaining transparent communication with leadership during critical phases and mentoring teammates to take ownership, I’ll build stronger team resilience and collaboration.
+
+These actions will help me achieve my goals of delivering secure, high-quality, and scalable solutions while demonstrating growth mindset, accountability, and customer obsession.
+Manager comments
+Thank you for putting together such well-structured and impactful goals. The clarity and specificity you've brought to these, including concrete timelines, measurable outcomes, and clear deliverables, demonstrates strong ownership and strategic thinking. You've set yourself up for a successful period with goals that will have significant organizational impact across security, infrastructure modernization, and team capability building.
+
+Goal 1: Security Work - Critical Organizational Impact
+
+Your security goals are specific, ambitious, and directly aligned with our highest priorities:
+
+Zero CVEs by Q3 2026 - This is a bold, measurable commitment that demonstrates your ownership of infrastructure security
+M365 compliance certification for storageland by Q2 2026 - Critical deliverable with clear timeline
+Security hardening for storageland with CVE reduction - Directly strengthens our security posture
+This work is foundational to everything we do. Achieving M365 compliance certification for storageland will have lasting impact on our infrastructure's regulatory standing and security credibility. The systematic approach to driving CVEs to zero shows mature thinking about how to tackle a complex, ongoing challenge rather than just reactive patching. This is increasingly important as we run in secure government clouds and have a much shorter window to address CVE's.
+
+Goal 2: OS Upgrade - Strategic Modernization with Knowledge Transfer
+
+The specificity and thoughtfulness here is excellent:
+
+PostgreSQL 25.04 across all environments by Q2 2026 with zero customer impact - Clear scope with an appropriately high quality bar
+Document procedures and train 2 team members - This is outstanding force multiplication
+Postgres M365 compliance path approved by April 2, 2026 - Specific date and deliverable
+What really stands out is that you're thinking beyond just executing the technical work. By documenting procedures and training two team members, you're building sustainable team capability and reducing SME dependency, something that has been a gap in the team for a while. This isn't just about getting PostgreSQL upgraded, it's about ensuring the team can confidently manage PostgreSQL infrastructure going forward. 
+
+The zero customer-impacting incidents goal sets a high bar. Your focus on validation environments and proactive planning in your "how" section shows you understand what it takes to achieve that level of quality.
+
+Goal 3: Engineering Excellence - Multi-Dimensional Impact
+
+You're thinking holistically about engineering excellence across several important dimensions:
+
+Reliability and performance:
+
+Defining error budgets for infrastructure components demonstrates mature SRE thinking
+The 5% YoY error budget reduction is appropriately ambitious and gives you a concrete target
+Cross-organization contribution:
+
+5 design spec reviews per quarter - Specific, measurable participation that extends your influence
+Hiring support - Contributing to company-level talent acquisition, this may have limited opportunites over the next period but I appreciate your help and support here if and when required
+One demo per month - Regular knowledge sharing that increases your visibility
+This combination of technical excellence (error budgets, reliability metrics) and organizational contribution (design reviews, hiring, demos) positions you to have impact well beyond your immediate deliverables. The demo cadence particularly will help showcase the important infrastructure work you're doing and build awareness across the organization.
+
+As you work on defining error budgets this period, I'm here to help if you need support gathering baseline data, getting stakeholder alignment, or connecting with others doing similar work. For the managed stamps contribution, let's align on what level of involvement makes sense given your other substantial commitments, I want you successful across all your goals.
+
+Goal 4: AI & Mentoring - Building Capability and Innovation
+
+Your dual focus on innovation and team development is exactly right:
+
+AI-powered automation to reduce manual operational work - Forward-thinking approach to efficiency and leveraging modern capabilities
+Mentor 2 team members on Postgres/Elasticsearch with success measured by their ability to independently handle storageland work - Excellent knowledge transfer with clear, meaningful success criteria
+The mentoring goal is particularly valuable. Your deep expertise in Postgres and Elasticsearch makes you the ideal person to build this capability in others. By measuring success through their independent capability rather than just "hours of training provided," you're ensuring real, lasting knowledge transfer happens. This will meaningfully improve team resilience and reduce single points of dependency.
+
+When you identify specific AI-powered automation opportunities, I'd love to hear about them as this could be valuable learning for the broader team.
+
+Your "How" - Demonstrates Maturity and Self-Awareness
+
+Your approach shows thoughtful reflection on what makes complex projects successful:
+
+Proactive alignment with partner teams - Smart stakeholder management that prevents surprises and builds buy-in
+Clear documentation and early-stage validation environments - Reduces risk and improves delivery quality
+Leveraging AI tools and automation - Modern, forward-thinking approach to efficiency
+Transparent communication during critical phases - Builds trust and keeps leadership informed
+Mentoring teammates to take ownership - Develops team capability and resilience
+These behaviors will absolutely support your success. The emphasis on validation environments before production deployment, combined with proactive communication, shows you understand how to execute complex infrastructure changes while managing risk effectively.
+
+Your commitment to applying learnings from recent challenges demonstrates growth mindset—continuously improving how you work based on experience.
+
+How I'll Support You
+
+As you work toward these ambitious goals:
+
+Security and compliance: I'll help escalate blockers, connect you with the right stakeholders for M365 certification, and ensure leadership understands the complexity and organizational impact of this work
+OS upgrade execution: Let's establish check-ins during critical phases. If you encounter unexpected technical challenges, dependency issues, or need additional resources, I'm here to help
+Knowledge transfer: As you mentor the 2 team members, let me know if you need protected time or specific resources to make the mentoring effective. Building others' capabilities is important work that deserves dedicated attention.
+Cross-org visibility: I'll help amplify your design review participation, demos, and hiring contributions so leadership sees your broader organizational impact beyond your direct deliverables
+Workload management: With substantial scope across these four goals, let's stay connected on capacity and priorities. I want you successful and sustainable, not overextended
+What Success Looks Like
+
+By the end of this period, you'll have:
+
+Significantly strengthened Viva Engage's security posture through CVE elimination and M365 compliance
+Modernized critical PostgreSQL infrastructure with zero customer disruption
+Built sustainable team capability through comprehensive documentation and hands-on mentoring
+Established reliability benchmarks through error budgets
+Demonstrated thought leadership through design reviews and monthly demos
+Contributed to organizational talent acquisition
+This represents substantial impact across technical excellence, security, team development, and cross-organizational contribution.
+
+I'm confident in your ability to execute these goals and excited to support you throughout the period. Let's plan regular check-ins on progress, especially as you approach those Q2 2026 milestones for security certification and OS upgrades. If you hit blockers or need support before our scheduled 1:1s, don't hesitate to reach out.
+
+Thank you for the thought and care you put into these goals. This is excellent strategic planning that sets you up for success and meaningful impact. Let's make it happen!
+
+Reflect on the past
+At Microsoft, we have high performance expectations of everyone. We must strive to deliver on ambitious goals, accelerate our culture and act with speed and urgency. Capture what you’ve accomplished and learned since your last Connect.
+Summarize your impact
+
+Core priorities
+Show from previous Connect
+Prompt:
+What impact did you have for each of your core priorities?
+Employee Response:
+Collaborated with the YES team to upgrade the LAB environment to PostgreSQL 16.
+
+Coordinated with service teams to validate and test their services on PostgreSQL 16 in the LAB environment.
+
+Modified existing infrastructure tools to ensure compatibility with PostgreSQL 16.
+
+Optimized the PostgreSQL image by removing unnecessary packages, resulting in a reduced image size.
+
+Resolved MSI-related issues in the storage image factory for Ubuntu 16.04.
+
+Successfully upgraded all STAGE PostgreSQL clusters to version 16.
+
+Empowered Amruta to step into a leadership role by providing coaching and support for PostgreSQL 16 service testing.
+
+Diversity & Inclusion (D&I) Core Priority
+Show from previous Connect
+Prompt:
+What impact did your actions have in contributing to a more diverse and inclusive Microsoft?
+Employee Response:
+Provided guidance on upgrading Azure Kubernetes Service (AKS) for the Elasticsearch deployment, including best practices and version compatibility considerations.
+
+Assisted Amit in ramping up for his first on-call shift by sharing relevant documentation, processes, and troubleshooting tips.
+
+
+Security Core Priority
+Show from previous Connect
+Prompt:
+What impact did your actions have in contributing to a more secure Microsoft? You can still capture progress even before you set your Security Core Priority for the first time.
+Employee Response:
+Working on the PostgreSQL upgrade to improve security by resolving open CVEs, streamline operations for the team, and decrease the support burden on storage SMEs.
+
+Manager comments
+Piyush, I want to commend you on your significant technical contributions during this reflection period:
+
+1. PostgreSQL 16 upgrades: Your collaboration with the YES team to upgrade the LAB environment demonstrates your technical expertise and cross-team coordination skills. Following this up with successful testing and validation with service teams shows your thoroughness in ensuring everything works as expected.
+I appreciate the good feedback from Amruta on the coaching you provided to help her drive the service team testing. This is a challenging aspect of the project and had stalled somewhat. However, with you providing Amruta with the opportunity and guidance you have helped get clarity across all teams regarding what testing is possible and moved the project forward.
+
+2. Infrastructure tools adaptation: Your work modifying existing tools for PostgreSQL 16 compatibility helps ensure a smooth transition across our environments.
+
+3. Image optimization: The reduced PostgreSQL image size through package optimization shows your attention to efficiency and system performance.
+
+4. Issue resolution: Resolving the MSI-related issues in the storage image factory demonstrates your problem-solving abilities and deep technical knowledge.
+
+5. STAGE environment upgrades: The successful upgrade of all STAGE PostgreSQL clusters to version 16 represents a significant milestone in our modernization efforts.
+
+D&I Core Priority
+
+Your contributions to diversity and inclusion have been practical and impactful:
+
+1. Providing guidance on AKS upgrades for Elasticsearch deployment shows your willingness to share knowledge and support colleagues.
+2. Assisting Amit with his first on-call shift demonstrates your commitment to mentoring team members and ensuring their success.
+
+These actions contribute to an inclusive environment where knowledge is shared freely and team members support each other's growth. I encourage you to continue this mentorship approach and perhaps consider expanding it to more structured initiatives in the future.
+
+Security Core Priority
+
+I appreciate your focus on the PostgreSQL upgrade to reduce open CVEs. This work directly contributes to our security posture and aligns with broader Microsoft security initiatives. Your proactive approach to addressing security through regular upgrades demonstrates your understanding of security as an ongoing process rather than a one-time effort.
+Reflect on a challenge or setback
+
+All of us must accelerate our culture by doubling down on growth mindset and challenging our fixed mindsets. Share how you demonstrated a growth mindset by taking personal accountability for setbacks, seeking and providing feedback, and applying learnings to have greater impact.
+Prompt:
+Consider when you could have done something differently. How will you apply what you learned to make an even greater impact?
+Employee Response:
+During the PostgreSQL upgrade proof of concept (POC), I could have identified the cross-region replication issue earlier. This would have helped prevent delays and allowed for a smoother implementation process. From this experience, I’ve learned the importance of proactively validating critical dependencies—especially those that span regions or environments—at the earliest stages of planning.
+
+Going forward, I will incorporate more thorough pre-checks and targeted testing of key integration points early in the POC phase. By anticipating potential failure areas and involving cross-functional stakeholders sooner, I aim to mitigate risks earlier and drive more effective, scalable solutions.
+
+
+Manager comments
+Your reflection on the cross-region replication issue during the PostgreSQL upgrade POC shows self-awareness and a growth mindset. There are some projects/instances where moving quickly is beneficial, however, the Postgres upgrade is not one of those. This is a project that requires every possibility to be planned for to ensure we are not trying to solve any issues that we encounter, rather than executing on a detailed plan. Thinking through all of these possibilities in advance will not a guarantee that every possibility is identified, but it might have helped here.
+
+For future projects, consider building in additional validation steps for cross-region functionality earlier in the POC phase. Also, utilize the Principal Engineering community (both within the team and across the organization) to discuss your approach. This kind of honest reflection helps us all improve our processes and approach.
+Plan for the future
+Think about opportunities for impact in the upcoming Connect period. What are your 3-5 core priorities?
+Review your core priorities
+
+
+Core priorities
+Title for core priority number one :Security work
+1. Security work
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Contribute to enhancing security across Microsoft
+Strive to strengthen the security of Viva Engage
+Prompt:
+Success measures:
+Employee Response:
+NO open CVEs for Viva engage Infra team
+Ensure all infrastructure components are compliant with M365 standards.
+
+Title for core priority number two :Postgres upgrade
+2. Postgres upgrade
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Define path to make Postgres M365 compliance
+Prompt:
+Success measures:
+Employee Response:
+Postgres upgrade to latest version on all envs
+Better support and less reliance on SME's for our Storage systems
+Title for core priority number three :Engineering Excellence
+3. Engineering Excellence
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Improving the reliability and performance of Viva Engage
+Automating the infrastructure to minimize manual work and maintaining high availability
+Contribute to cross-organization activities
+Prompt:
+Success measures:
+Employee Response:
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+contribute to Managed stamp project
+To measure cross-org activities
+Participate in design spec review
+Participate/helping in hiring at company level
+Contribute to FHL event
+
+
+Diversity & Inclusion (D&I) Core Priority
+To realize our mission to empower every person and organization on the planet to achieve more, each and every one of us must help create a diverse and inclusive culture where everyone can bring their full and authentic self, in alignment with our values. Consider how you will deliver successful impact by consistently demonstrating Microsoft’s cultural expectations and values. Visit the Diversity & Inclusion (D&I) Core Priority page for guidance and examples of impact.
+Prompt
+Select and commit to at least one focus area from the options below, or create one of your own.
+Employee Selected
+Practice allyship skills in the moment
+Employee Selected
+Engage in constructive 1:1 or group discussions around D&I
+Employee Selected
+Actively participate in Employee Resource Groups
+Employee Selected
+Complete D&I learning, reflect on new knowledge and practice what I learn
+Employee Selected
+Seek diverse perspectives and incorporate feedback, apply insights from a variety of sources and people
+Employee Selected
+Develop or implement inclusive products, processes, or practices
+Employee Selected
+Mentor and/or support a person who may benefit
+Prompt:
+How will you define success as you activate your D&I Core Priority?
+Employee Response:
+n/a
+
+Security Core Priority
+We all have the responsibility to directly contribute to the security of Microsoft and our customers. We must all commit to prioritizing the design, build and delivery of technology, tools, data and processes that meet the highest possible standard of security. For more information on the Security Core Priority, visit HRweb.
+Employee Selected
+With this priority, I personally commit to being an active and intentional participant in creating a secure Microsoft by:
+Completing and applying learnings from required Security Foundations and Trust Code (Standards of Business Conduct) trainings.
+Prioritizing security in my own work and ensuring I have anticipated and implemented secure approaches to products, processes and tools in alignment with our Secure Future Initiative.
+Committing to leveraging MSProtect to learn more about how I can contribute to securing Microsoft, including reporting any digital or physical security incidents via Report It Now.
+
+Manager comments
+Your core priorities for the upcoming period align well with our team and organizational needs:
+
+1. Security work: Your focus on eliminating open CVEs for Viva Engage Infra and ensuring compliance with M365 standards is essential for our security posture. Consider adding specific milestones or a timeline for addressing the highest priority vulnerabilities first.
+
+2. PostgreSQL upgrade: Your goal to define a path for M365 compliance and complete upgrades across all environments is a clear continuation of your current work. I'd suggest adding specific success criteria around minimal downtime or service disruption during these upgrades. The updated Postgres will need to be supported by everyone on the team with less reliance on SME's. Let's measure this by how many incidents require SME involvement to mitigate (not root cause).
+
+3. Engineering Excellence: I'm particularly impressed with your comprehensive approach here:
+   - The focus on reliability and error budgets provides a quantitative framework for improvement
+   - Your 5% YoY error budget reduction target is ambitious yet achievable
+   - Your commitment to the Managed Stamp project and cross-organizational activities shows your broader perspective
+
+D&I Core Priority
+
+I notice you've selected multiple D&I focus areas but haven't defined success criteria for them (marked as "n/a"). Let's discuss setting specific, measurable objectives in this area that align with your strengths and interests, particularly around mentorship and knowledge sharing since these are clear strengths you've already demonstrated.
+
+Security Core Priority
+
+Your security commitments are comprehensive. To make them more concrete, I suggest tying them specifically to your PostgreSQL upgrade work and defining measurable outcomes for security improvements.
+
+Identify your opportunities for growth
+
+We are all expected to embrace a growth mindset and focus on continuous learning to deliver successful impact.
+Prompt:
+What 1-2 actions will you take over the next period to learn and apply new skills and capabilities?
+Employee Response:
+Learn about AI and how can we leverage it to Engage Infrastructure
+Prompt:
+What support do you need to fulfill these actions? Fill in any that apply.
+Prompt:
+Opportunities to (optional):
+Employee Response:
+No Response
+Prompt:
+Perspective or coaching on (optional):
+Employee Response:
+No Response
+Prompt:
+Learning on (optional):
+Employee Response:
+No Response
+
+Manager comments
+Your interest in learning about AI applications for Engage Infrastructure shows forward thinking. This aligns well with Microsoft's broader focus on AI integration. I'll help connect you with relevant resources and possibly internal experts in this area. Let's discuss specific AI learning paths or potential projects where we could apply AI to improve our infrastructure operations.
+Reflect on the past
+One aspect of successful impact is when you consistently deliver against all and likely exceed some expectations for your core priorities. Capture what you’ve accomplished and learned since your last Connect.
+Summarize your impact
+
+Core priorities
+Show from previous Connect
+Prompt:
+What impact did you have for each of your core priorities?
+Employee Response:
+EUDB Split Routing Project:
+
+    The Teams Q&A feature is now EUDB compliant for new customers with support for split routing. While we encountered some incidents due to a RouteKey bug, the split routing functionality is now stable in production.
+
+    Identified long-standing issues related to empty tenant IDs in the RouteKey database. Proposed and implemented a fix to prevent future occurrences.
+
+    Assisted Stefan with RouteKey updates to support EUDB data migration, including designing new APIs, reviewing code, and developing test cases.
+
+Postgres Upgrade:
+
+    Coordinated with Viva Engage engineering managers to communicate the dependency on the Postgres upgrade across all service teams, securing their buy-in.
+
+    Collaborated with the YES team on upgrading the LAB environment.
+
+    Mentored Doug on the Postgres upgrade project to prepare him to lead communications with engineering teams regarding LAB changes.
+
+    Identified and implemented code updates required for Postgres 16 across infrastructure tools, such as storage-postgres-agent, storage-image-factory, and automation for the upgrade process.
+
+On-call Support:
+
+    Remained available to assist the infrastructure on-call engineers, even outside my designated on-call hours, to maintain Viva Engage reliability.
+
+    Encouraged service teams to avoid direct infrastructure modifications that might have unintended effects, such as running expensive database queries directly on servers or altering network settings.
+Diversity & Inclusion (D&I) Core Priority
+Show from previous Connect
+Prompt:
+What impact did your actions have in contributing to a more diverse and inclusive Microsoft?
+Employee Response:
+    Participated in the Viva Engage intern hiring committee, contributing to a diverse hiring process and ensuring a positive experience for new hires.
+
+    Provided project guidance and coaching to infrastructure team members. I've coached Stefan on RouteKey and Elasticsearch, enabling him to make code changes and handle critical incident operations. I've encouraged Doug to work on the PostgreSQL upgrade, draft an engineering post on executing service upgrades in the LAB environment, and follow up with the service teams on their progress in LAB.
+Security Core Priority
+Prompt:
+What impact did your actions have in contributing to a more secure Microsoft? You can still capture progress even before you set your Security Core Priority for the first time.
+Employee Response:
+    Implemented MSI-related changes within the storage infrastructure, including changes to storage accounts, service principals, and deploy pipelines.
+
+    Took the initiative to consolidate and report on the infrastructure MSI status. Transitioned this responsibility to Doug to lead future status updates.
+
+Manager comments
+Core Priorities
+EUDB Split Routing Project
+Your work on making the Teams Q&A feature EUDB compliant for new customers with support for split routing is commendable. Despite encountering some incidents due to a RouteKey bug, it's great that the split routing functionality is now stable in production and enables us to meet our EUDB commitments. Identifying and fixing long-standing issues related to empty tenant IDs in the RouteKey database ensures we have closed a gap in our infrastructure that caused difficult to detect issues that impacted out customers. Additionally, your assistance to Stefan with RouteKey updates, including designing new APIs, reviewing code, and developing test cases, has been invaluable in ensuring that we no longer have single engineers supporting this critical infrastructure.
+
+Postgres Upgrade
+Coordinating with Viva Engage engineering managers to communicate the dependency on the Postgres upgrade across all service teams and securing their buy-in is a crucial step. Your collaboration with the YES team on upgrading the LAB environment and mentoring Doug on the Postgres upgrade project to prepare him to lead communications with engineering teams regarding LAB changes is highly commendable. Identifying and implementing code updates required for Postgres 16 across infrastructure tools, such as storage-postgres-agent, storage-image-factory, and automation for the upgrade process, showcases your technical expertise and dedication. This is a significant project for the infrastructure team and has been delayed for many years due to concerns regarding the risks. I appreciate you thinking outside the box and identifying a viable upgrade path that you have confirmed. When complete, this will provide many benefits and ensure we are able to complete further security updates that are currently blocked.
+
+On-call Support
+Your availability to assist the infrastructure on-call engineers, even outside your designated on-call hours, to maintain Viva Engage reliability is highly appreciated. Encouraging service teams to avoid direct infrastructure modifications that might have unintended effects demonstrates your proactive approach to maintaining system stability.
+
+Diversity & Inclusion (D&I) Core Priorities
+Thankyou for your coaching, especially on getting Stefan up to speed on Routekey. This system was a concern in the few engineers that were able to support this and it was becoming a blocker for projects. Now we have more engineers capable of supporting this we do not have to rely on specific individuals.
+
+Security Core Priorities
+Your work on implementing MSI-related changes within the storage infrastructure, including changes to storage accounts, service principals, and deploy pipelines, is a significant achievement. These changes have undoubtedly enhanced our security and reduced the risk of credential-related incidents. Additionally, your initiative to consolidate and report on the infrastructure MSI status and transitioning this responsibility to Doug for future status updates demonstrates your leadership and commitment to fostering a secure environment.
+
+While your efforts have had a substantial impact, there is always room for improvement. Consider documenting the processes and lessons learned from implementing MSI-related changes. This documentation can serve as a valuable resource for the team and help streamline future security initiatives. Additionally, continue to stay updated on the latest security best practices and incorporate them into your work.
+
+
+Reflect on a challenge or setback
+
+In addition to your accomplishments relative to your core priorities, you must demonstrate a growth mindset to deliver successful impact. Share how you demonstrated a growth mindset by taking personal accountability for setbacks, asking for feedback, and applying learnings to have greater impact.
+Prompt:
+Consider when you could have done something differently. How will you apply what you learned to make an even greater impact?
+Employee Response:
+I realized that with more thorough testing and a bit more patience before pushing changes to production, I could have prevented the RouteKey incidents.
+
+This experience has reinforced the importance of prioritizing accuracy, thoroughly validating code, and confidently pushing back when service teams request rushed infrastructure changes that could impact reliability.
+
+Manager comments
+Thank you for reflecting on the challenge you faced with the RouteKey incidents. It's great to see that you have taken personal accountability and identified key learnings from this experience.
+
+Your realization that more thorough testing and patience before pushing changes to production could have prevented the RouteKey incidents is an important insight. Recognizing the need to prioritize accuracy and thoroughly validate code is crucial for maintaining the reliability of our systems. The services that our team operate can cause significant customer impact with any error, as such we need to maintain a high bar in terms of quality. While we see other teams move quicker and possibly trade this deeper level of testing, we are not in a position to do that. 
+
+It's commendable that you have identified the importance of confidently pushing back when service teams request rushed infrastructure changes. This proactive approach will help prevent similar incidents in the future and ensure that our infrastructure remains stable and reliable. Additionally, consider documenting the lessons learned from this experience and sharing them with the team to help others avoid similar challenges. You have my support in ensuring we protect the stability of our infrastructure services for the benefit of our customers. I acknowledge this is a change to how we have operated in the past and service teams expect us to continue as we have historically, but we need to be disciplined in our approach to prevent these issues from happening again.
+
+Encouragement for Future Growth
+To continue making a greater impact, I encourage you to:
+
+Prioritize Thorough Testing: Always allocate sufficient time for thorough testing before pushing changes to production.
+Communicate Effectively: Clearly communicate the importance of thorough testing and validation to service teams, and confidently push back on rushed requests.
+Share Learnings: Document and share the lessons learned from this experience with the team to foster a culture of continuous improvement.
+I have also noticed some challenges in working with the Search team. I see their requests get escalated to me as they have expectations of quicker responses to their asks. I'd like you to work on ensuring we maintain a healthy relationship with all of the engineers and managers within that organization. This is not a criticism of any aspect of your work in this area, I think the work you did to have this running on AKS has delivered a great benefit to both the infrastructure team and the Search team in our ability to update Elasticsearch versions easily. However, as the SME for Elasticsearch I see you get requests sent directly to you. It is important for you to 'coach' the requestor on our team processes to avoid them becoming frustrated waiting for you to reply. You have my full support in this, when these instances have been escalated, I have followed the same process, but you have the opportunity to address these before they are escalated and cause frustration for the team interacting with us.
+Plan for the future
+Think about opportunities for impact in the upcoming Connect period. What are your 3-5 core priorities?
+Review your core priorities
+
+
+Core priorities
+Title for core priority number one :Security work
+1. Security work
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Contribute to enhancing security across Microsoft
+Strive to strengthen the security of Viva Engage
+Prompt:
+Success measures:
+Employee Response:
+NO open CVEs for Viva engage Infra team
+Ensure all infrastructure components are compliant with M365 standards.
+
+Title for core priority number two :Postgres upgrade
+2. Postgres upgrade
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Define path to make Postgres M365 compliance
+Prompt:
+Success measures:
+Employee Response:
+Postgres upgrade to latest version on all envs
+Title for core priority number three :Engineering Excellence
+3. Engineering Excellence
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Improving the reliability and performance of Viva Engage
+Automating the infrastructure to minimize manual work and maintaining high availability
+Contribute to cross-organization activities
+Prompt:
+Success measures:
+Employee Response:
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+contribute to Managed stamp project
+To measure cross-org activities
+Participate in design spec review
+Participate/helping in hiring at company level
+Contribute to FHL event
+
+
+Diversity & Inclusion (D&I) Core Priority
+To realize our mission to empower every person and organization on the planet to achieve more, each and every one of us must help create a diverse and inclusive culture where everyone can bring their full and authentic self, in alignment with our values. Consider how you will deliver successful impact by consistently demonstrating Microsoft’s cultural expectations and values. Visit the Diversity & Inclusion (D&I) Core Priority page for guidance and examples of impact.
+Prompt
+Select and commit to at least one focus area from the options below, or create one of your own.
+Employee Selected
+Practice allyship skills in the moment
+Employee Selected
+Engage in constructive 1:1 or group discussions around D&I
+Employee Selected
+Actively participate in Employee Resource Groups
+Employee Selected
+Complete D&I learning, reflect on new knowledge and practice what I learn
+Employee Selected
+Seek diverse perspectives and incorporate feedback, apply insights from a variety of sources and people
+Employee Selected
+Develop or implement inclusive products, processes, or practices
+Employee Selected
+Mentor and/or support a person who may benefit
+Prompt:
+How will you define success as you activate your D&I Core Priority?
+Employee Response:
+n/a
+
+Security Core Priority
+We all have the responsibility to directly contribute to the security of Microsoft and our customers. We must all commit to prioritizing the design, build and delivery of technology, tools, data and processes that meet the highest possible standard of security. For more information on the Security Core Priority, visit HRweb.
+Employee Selected
+With this priority, I personally commit to being an active and intentional participant in creating a secure Microsoft by:
+Completing and applying learnings from required Security Foundations and Trust Code (Standards of Business Conduct) trainings.
+Prioritizing security in my own work and ensuring I have anticipated and implemented secure approaches to products, processes and tools in alignment with our Secure Future Initiative.
+Committing to leveraging MSProtect to learn more about how I can contribute to securing Microsoft, including reporting any digital or physical security incidents via Report It Now.
+
+Manager comments
+Core Priorities
+Security Work
+Your focus on contributing to enhancing security across Microsoft and strengthening the security of Viva Engage is crucial. Ensuring that there are no open CVEs for the Viva Engage Infra team and that all infrastructure components are compliant with M365 standards are clear and achievable success measures. Your efforts in this area will significantly contribute to our overall security posture. The first milestone on this goal will be delivery of the next Elasticsearch release that supports MSI. This will be an opportunity for you to ensure others on the team are able to update Elasticsearch.
+
+Postgres Upgrade
+Defining a path to make Postgres M365 compliant and upgrading to the latest version on all environments are essential steps for maintaining the reliability and performance of our systems. Your commitment to this priority will help ensure that our infrastructure remains up-to-date and secure. This is a long running goal what will take significant coordination across most services within the organization. I'd like to set the goal in terms of number of database clusters upgraded over the next period (6 months). I think a good target is to have all of staging, stamp1, and some stamp0 completed, including hdb that will unblock the Ubuntu update.
+
+Engineering Excellence
+Improving the reliability and performance of Viva Engage, automating the infrastructure to minimize manual work, and maintaining high availability are commendable goals. Your focus on defining error budgets for each infrastructure component, meeting those error budgets, and reducing them by 5% year-over-year demonstrates a proactive approach to continuous improvement. Additionally, your contributions to the Managed Stamp project, participation in design spec reviews, helping with hiring at the company level, and contributing to the FHL event showcase your dedication to cross-organization activities.
+
+Other
+
+Additionally, now that you have been promoted to Principal Engineer I'd like to ensure you include PE level goals. I think the Postgres upgrades are significant and provides an opportunity to raise the level of expertise with our storage systems across the entire team. This has been a gap in the past and I'd like you to use this project as an opportunity to level up others on the team. A good measure of this goal will be if someone else on the team (ideally someone who is not currently considered a storage SME) can complete one of the Postgres upgrades.
+
+Identify your opportunities for growth
+
+We are all expected to embrace a growth mindset and focus on continuous learning to deliver successful impact.
+Prompt:
+What 1-2 actions will you take to focus on learning, growth, and development over the next period?
+Employee Response:
+Explore opportunities to integrate AI into Viva Engage Infrastructure
+Prompt:
+What support do you need to fulfill these actions? Fill in any that apply.
+Prompt:
+Opportunities to (optional):
+Employee Response:
+No Response
+Prompt:
+Perspective or coaching on (optional):
+Employee Response:
+No Response
+Prompt:
+Learning on (optional):
+Employee Response:
+AI
+
+Manager comments
+Thank you for identifying your opportunities for growth and outlining your actions for the upcoming period. It's great to see your commitment to continuous learning and development.
+
+Your decision to explore opportunities to integrate AI into Viva Engage Infrastructure is a fantastic step towards leveraging cutting-edge technology to enhance our systems. This focus on AI will not only help you develop new skills but also contribute to the innovation and efficiency of our infrastructure.
+
+While your plan to explore AI integration is commendable, consider identifying specific areas within Viva Engage Infrastructure where AI can have the most impact. This targeted approach will help you prioritize your efforts and achieve more tangible results. Additionally, actively seek out resources and training opportunities to deepen your understanding of AI and its applications. For this I would suggest we discuss a specific project that will have measurable impact. There are many areas within infrastructure that could offer this opportunity. For example, better alerting when a request is routed to the wrong cell, better scaling. 
+
+I would also like you to focus on leveling up others on the infrastructure team and service teams. As a Principal Engineer you are in a position to steer the technical choices of others and I would like you to use that where required. Initially, you should be active in the YRFC process and ensure we have someone from infrastructure reviewing any documents that will impact our services.
+
+Reflect on the past
+One aspect of successful impact is when you consistently deliver against all and likely exceed some expectations for your core priorities. Capture what you’ve accomplished and learned since your last Connect.
+Summarize your impact
+
+Core priorities
+Show from previous Connect
+Prompt:
+What impact did you have for each of your core priorities?
+Employee Response:
+I Lead the design and planning phases of the EUDB Split routing project, maintaining continuous communication with partner teams to monitor project progress and track inter-team dependencies. The implementation of EUDB Routkey changes was executed within the estimated timeframe without any delays. Additionally, I provided guidance and mentorship to Stefan from the Infra team, assisting him with RouteKey code changes and addressing any blockers he encountered.
+I participated in the EUDB data migration design, especially on how re-locator service will communicate cross stamp. 
+I came up with a detailed process document outlining the strategy for achieving a Postgres upgrade with minimal downtime and reduced risk. I successfully conducted a proof of concept for the Postgres upgrade on the HDB production database, ensuring no disruption to live traffic. My evaluation of various upgrade options led to convincing senior principals (Clark, Raghu, Tobi) to pursue an option that minimizes downtime and risk.
+I have conducted detail investigation when the Engage service experienced issues with failing read queries due to an unresponsive Postgres replica. Through this investigation, I identified a crucial oversight in the Bouncie layer, which was continuously directing read traffic to the unresponsive replica due to the absence of proper disk availability checks in healthcheck. By rectifying this issue, we enhanced service availability and established a protocol to automatically remove faulty replica nodes in similar future scenarios.
+I conducted detailed debugging when Elastic search cluster having embedding container keep crashing, Through my investigation, I discovered that the search team enable the profiling which cause the container to keep crashing, I communicated this issue to search team once they fixed it containers were stabled. 
+Diversity & Inclusion (D&I) Core Priority
+Show from previous Connect
+Prompt:
+What impact did your actions have in contributing to a more diverse and inclusive Microsoft?
+Employee Response:
+N/A
+
+Manager comments
+Piyush, your impact across your core priorities is impressive and showcases your leadership and technical expertise.
+
+EUDB Split Routing Project: Leading the design and planning phases with effective communication and coordination with partner teams is a testament to your project management skills. The timely execution of EUDB RouteKey changes reflects your ability to deliver on commitments. Additionally, your mentorship to Stefan is a valuable contribution to his professional development and the team’s success. Prior to you taking on this project we have Tobi as the main knowledge on this service and this resulted in him being a bottleneck for other teams/projects. Now that you have taken on this, in addition to getting Stefan familiar with the code, we are in a much beter position as a team to continue to support this.
+
+EUDB Data Migration Design: Your participation in the design of the EUDB data migration, particularly in cross-stamp communication, is crucial for the project’s success. Your insights and contributions are undoubtedly enhancing the efficiency and reliability of the migration process.
+
+Postgres Upgrade Proof of Concept: The detailed process document and successful proof of concept for the Postgres upgrade on the HDB production database demonstrate your foresight and commitment to minimizing downtime and risk. Convincing senior principals to pursue the most optimal upgrade option is a clear indication of your persuasive communication and deep understanding of the technical aspects.
+
+Engage Service Issue Investigation: Your detailed investigation into the Engage service issues and the identification of the oversight in the Bouncie layer highlight your problem-solving abilities. The protocol you established for automatically removing faulty replica nodes will enhance service availability and reliability in the future.
+
+Elastic Search Cluster Debugging: Your thorough debugging of the Elastic search cluster issue and the discovery of the profiling error show your keen analytical skills. Your communication with the search team led to the stabilization of the containers, which is a significant achievement.
+
+Your actions have had a substantial impact on the projects you’ve been involved with, and your ability to lead, mentor, and problem-solve is commendable. Keep up the excellent work, and I look forward to seeing your continued contributions to our team and projects.
+
+
+Reflect on a challenge or setback
+
+In addition to your accomplishments relative to your core priorities, you must demonstrate a growth mindset to deliver successful impact. Share how you demonstrated a growth mindset by taking personal accountability for setbacks, asking for feedback, and applying learnings to have greater impact.
+Prompt:
+Consider when you could have done something differently. How will you apply what you learned to make an even greater impact?
+Employee Response:
+I see opportunities for growth in my approach to resolving live site issues. For instance, in a recent incident where a service encountered high latency and 5xx errors to ventsink, I spent nearly an hour attempting to restart ventsink/kafka without considering why only the east region was experiencing this issue, potentially indicating a cross-region network connectivity problem.
+
+I recognize the potential for improvement in my documentation efforts. I could have created more detailed Elasticsearch and Postgres run-books, as well as Technical Support Guides (TSGs), to empower other engineers with limited knowledge to effectively address production and on-call issues. This reflects my commitment to continuous learning and enhancement of processes for the benefit of the team's success.
+
+Manager comments
+Thank you for taking the time to reflect on your experiences and identifying areas for growth. It takes a lot of courage to acknowledge what could have been done differently, and I appreciate your willingness to learn and improve.
+
+Your self-awareness in recognizing the importance of considering the root cause of the issue, rather than just treating the symptoms, is crucial in resolving live site issues efficiently. Your approach to this incident highlights the importance of taking a step back to assess the situation before diving into troubleshooting. I'm confident that you'll apply this lesson to future incidents and make a greater impact on our team's response times and overall site reliability.
+
+I also appreciate your commitment to improving our documentation efforts. Creating detailed run-books and Technical Support Guides (TSGs) is essential in empowering the team to effectively address production and on-call issues. Your recognition of this need demonstrates your commitment to knowledge sharing and collaboration. I encourage you to prioritize this effort and work with the team to develop a plan to create and maintain these critical resources. This work does not always fall to you, if other SME's in the team have not provided sufficiently detailed documentation, then it is a responsibility of you (and everyone on the team) to raise this and get the required changes made.
+
+As we move forward, I'd like to see you continue to apply the lessons you've learned from this experience. Let's work together to set specific goals for improving our documentation and troubleshooting processes. I'm excited to see the impact you'll make in the next six months.
+
+Keep up the great work, and let's discuss progress in out 1-on-1 meetings.
+Plan for the future
+Think about opportunities for impact in the upcoming Connect period. What are your 3-5 core priorities?
+Review your core priorities
+
+
+Core priorities
+Title for core priority number one :Engineering Excellence
+1. Engineering Excellence
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Improve the reliability and performance of the Viva Engage.
+Make Viva Engage Infra more manageable (introduce automation so minimum manual work required)
+Maintain High availability of Viva Engage infrastructure (four 9's is the goal)
+Cost optimization of Viva Engage Infra
+Contribute and participate in cross-organization activities
+
+Prompt:
+Success measures:
+Employee Response:
+Success measure for above are:
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+Plan and POC of PSQL storage to manageable infra i.e. on Azure 
+Plan and POC of Mesos to Azure kubernetes services.
+To measure COGS 
+Target 5-10% COGS reduction YOY
+To measure cross-org activities
+Participate in design spec review
+Participate/helping in hiring at company level
+Contribute to FHL event
+Title for core priority number two :Improve Infra On-call experience
+2. Improve Infra On-call experience
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+One of our key focuses is to enhance the on-call experience for the infrastructure team. Areas we are looking to improve include 
+managing the lifecycle of secrets and certificates and reducing the toil of on-call work by implementing more automation for tasks such as patching, deploying, and Terraform changes.
+Prompt:
+Success measures:
+Employee Response:
+We can evaluate the success of the infrastructure on-call experience by measuring the pulse of the Infra OCE (On-Call Engineer) team.
+Title for core priority number three :Postgres compliance
+3. Postgres compliance
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Define path to make Postgres M365 compliance
+
+Prompt:
+Success measures:
+Employee Response:
+Postgres upgrade to latest version on all envs
+Upgrade OS version on Postgres clusters.
+Title for core priority number four :EUDB
+4. EUDB
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Design and execute routing solutions for tenants in EUDB
+Help out services team on EUDB data migration
+Prompt:
+Success measures:
+Employee Response:
+All EUDB compliance tenant should be migrated to EU stamp
+
+Diversity & Inclusion (D&I) Core Priority
+To realize our mission to empower every person and organization on the planet to achieve more, each and every one of us must help create a diverse and inclusive culture where everyone can bring their full and authentic self, in alignment with our values. Consider how you will deliver successful impact by consistently demonstrating Microsoft’s cultural expectations and values. Visit the Diversity & Inclusion (D&I) Core Priority page for guidance and examples of impact.
+Prompt
+Select and commit to at least one focus area from the options below, or create one of your own.
+Employee Selected
+Practice allyship skills in the moment
+Employee Selected
+Engage in constructive 1:1 or group discussions around D&I
+Employee Selected
+Actively participate in Employee Resource Groups
+Employee Selected
+Complete D&I learning, reflect on new knowledge and practice what I learn
+Employee Selected
+Seek diverse perspectives and incorporate feedback, apply insights from a variety of sources and people
+Employee Selected
+Develop or implement inclusive products, processes, or practices
+Employee Selected
+Mentor and/or support a person who may benefit
+Prompt:
+How will you define success as you activate your D&I Core Priority?
+Employee Response:
+n/a
+
+Manager comments
+Piyush, it’s great to see your well-defined core priorities and the clear success measures you’ve set for the upcoming period. Here’s my response:
+
+First, the highest priority is the ongoing security work. This will not change until we have completed the required changes (with more to come in sprint 2).
+
+Core Priority 1: Engineering Excellence Your focus on improving the reliability and performance of Viva Engage is essential for our service’s success. Automating the infrastructure to minimize manual work and maintaining high availability are ambitious goals that align with our commitment to operational excellence. Your plan to optimize costs and contribute to cross-organization activities will undoubtedly have a positive impact on our business.
+
+Success Measures: Defining error budgets for each infrastructure component and meeting those budgets with a 5% reduction year over year is a solid approach. Your plans for a POC of PSQL storage and Mesos to Azure Kubernetes services will pave the way for a more manageable infrastructure. Aiming for a 5-10% COGS reduction year over year is ambitious and will require careful planning and execution. Your participation in cross-org activities like design spec reviews, helping with company-level hiring, and contributing to the FHL event will enhance our collaborative efforts and drive innovation.
+
+Core Priority 2: Improve Infra On-call Experience Enhancing the on-call experience is crucial for the well-being of our infrastructure team. Your focus on managing the lifecycle of secrets and certificates and reducing on-call toil through automation will improve efficiency and job satisfaction.
+
+Success Measures: Measuring the pulse of the Infra OCE team is a good way to gauge the success of these improvements. Regular feedback and pulse surveys can help us understand the impact of the changes and identify areas for further improvement.
+
+Core Priority 3: Postgres Compliance Defining a path to make Postgres M365 compliant is a significant undertaking that will strengthen our infrastructure’s security and reliability.
+
+Success Measures: Upgrading Postgres to the latest version across all environments and updating the OS version on Postgres clusters are clear, measurable goals. These upgrades are critical for compliance and will enhance our system’s performance and security.
+
+Core Priority 4: EUDB Your work on designing and executing routing solutions for tenants in EUDB and assisting service teams with data migration is vital for our EUDB compliance efforts.
+
+Success Measures: The successful migration of all EUDB compliance tenants to the EU stamp is a clear and measurable goal. Your expertise and support in this area are invaluable to the success of the project.
+
+Piyush, your core priorities are well-aligned with our strategic goals, and your success measures provide a clear roadmap for evaluating progress. I’m confident that with your skills and dedication, you will achieve these goals and drive significant business impact.
+
+Identify your opportunities for growth
+
+We are all expected to embrace a growth mindset and focus on continuous learning to deliver successful impact.
+Prompt:
+What 1-2 actions will you take to focus on learning, growth, and development over the next period?
+Employee Response:
+Seek Feedback Regularly: I will actively seek feedback from colleagues to understand areas for improvement and identify opportunities for growth. Constructive feedback will guide my learning journey and help me refine my skills and approaches.
+
+Engage in Skill Development Activities: I will dedicate time to engage in skill development activities such as attending workshops, enrolling in online courses, and participating in relevant training programs. By continuously expanding my knowledge and expertise, I aim to stay current with industry trends and enhance my capabilities to contribute effectively to projects and initiatives.
+
+
+Prompt:
+What support do you need to fulfill these actions? Fill in any that apply.
+Prompt:
+Opportunities to (optional):
+Employee Response:
+No Response
+Prompt:
+Perspective or coaching on (optional):
+Employee Response:
+I'm interested in receiving coaching to help me reach my career objectives.
+Prompt:
+Learning on (optional):
+Employee Response:
+No Response
+
+Manager comments
+Piyush, your proactive approach to seeking feedback and engaging in skill development activities is commendable. Regular feedback is a powerful tool for personal and professional growth, and it’s great to see your commitment to using it to refine your skills. Additionally, your plan to attend workshops, enroll in online courses, and participate in training programs is an excellent way to stay abreast of industry trends and enhance your capabilities.
+
+To support your growth, I encourage you to set specific goals for the feedback you seek and the skills you wish to develop. This will help you track your progress and ensure that your learning activities are aligned with your career aspirations. Also, consider sharing your learnings with the team, as this can foster a culture of continuous improvement and collective growth. Communication is an area where you will require strength as you become more senior and take broader responsibilities across critical projects. Continue to work on this (especially in communicating to senior leaders) to ensure project issues are well understood and tracked.
+
+Remember, your development benefits not just you, but the entire team and organization. I’m here to support you in these endeavors, so please don’t hesitate to reach out if you need resources or guidance along the way.
+
+Reflect on the past
+One aspect of successful impact is when you consistently deliver against all and likely exceed some expectations for your core priorities. Capture what you’ve accomplished and learned since your last Connect.
+Summarize your impact
+
+Core priorities
+Show from previous Connect
+Prompt:
+What impact did you have for each of your core priorities?
+Employee Response:
+I took the lead in provisioning vent/routekey services to COSMIC and acquired knowledge about the COSMIC framework, facilitating the onboarding of other services to COSMIC. 
+I am actively involved in planning and defining the path for modernizing the Postgres infrastructure. I collaborated with my manager, Steve, to explore viable options for PSQL and worked with the cross-org Azure CosmosDB for PSQL team on how we can leverage hyperscale. 
+I identified the necessary changes for the Viva Engage domain migration from the infrastructure side and successfully delivered them on time. 
+I designed and developed ONECERTs for Elasticsearch on both the server and client sides, implementing changes across all environments without causing any customer outage. 
+I provided suggestions on how the embedding service could leverage the existing search infrastructure.
+I suggested various improvements related to PSQL that services can implement to reduce the load on the primary database, such as optimizing top expensive queries and removing unused indexes.
+I'm currently leading the initiative for EUDB routing changes and providing assistance in the data migration process.
+I am also involved in infra on-call duties, handling on-call requests, and leading the resolution of on-call incidents, such as the PSQL incident where the Azure defender process took down the HDB primary node. I assisted the team in rebuilding the HDB cluster when ZK data corruption occurred. 
+Periodically, I have provided suggestions on how to improve on-call procedures, such as transferring the Yammer AAD/Wavefront admin responsibility to all managers so they can add their new team members without creating infra requests. I also suggested changes to resolve OS disk fill-up issues due to excessive logging.
+I am assisting the Viva Goals team in resolving their Postgres connection saturation problem.
+Diversity & Inclusion (D&I) Core Priority
+Show from previous Connect
+Prompt:
+What impact did your actions have in contributing to a more diverse and inclusive Microsoft?
+Employee Response:
+Attend training for Diversity & inclusion
+
+Manager comments
+Thank you for your contributions over the last period. Once again you have demonstrated your ability to deliver projects on time and to a high quality. Not only have you delivered on a many critical projects, I am also impressed with the diversity of your knowledge. You continue to expand your breadth of experience, most recently in driving the routekey changes for EUDB. This is critical for the overall team health to ensure we no longer rely on a few individuals for these areas and I appreciate you stepping up to take on these new areas.
+
+Defining the future of our Postgres use is a significant project for not only the infrastructure team but the entire organization. Thank you for driving the initial meetings with the Azure Postgres teams. I am sure we will be able to continue to make significant progress in this area next year.
+
+I value your knowledge and input into all aspects of the infrastructure and projects happening across the organization. I would like to see you be more vocal in pushing your ideas. The Elastic Search for embeddings pushed for a change that I was not convinced was the right path forward. I was not asking you to change, but I did want to see you consider other aspects of running a separate cluster rather than just the implementation. Considering all facets of a project is important and can lead to different choices being made, we have seen that repeatedly with taking the quickest solution over the best. 
+Reflect on a challenge or setback
+
+In addition to your accomplishments relative to your core priorities, you must demonstrate a growth mindset to deliver successful impact. Share how you demonstrated a growth mindset by taking personal accountability for setbacks, asking for feedback, and applying learnings to have greater impact.
+Prompt:
+Consider when you could have done something differently. How will you apply what you learned to make an even greater impact?
+Employee Response:
+I could have reduce the MTTR to some of the on-call incidents i.e PSQL related
+I could have been more thoughtful about how we can improve the infrastructure on-call burn down.
+
+Manager comments
+These are both good points to focus on and I love that you raise these both as they benefit the entire team. I would like to see you push harder on others, either in our own team or our external teams, and hold them accountable for meeting the standards that we aspire to. This is a balance, and I am always available to discuss the trade-off's that may be involved.
+Plan for the future
+Think about opportunities for impact in the upcoming Connect period. What are your 3-5 core priorities?
+Review your core priorities
+
+
+Core priorities
+Title for core priority number one :Engineering Excellence
+1. Engineering Excellence
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Improve the reliability and performance of the Viva Engage.
+Make Viva Engage Infra more manageable (introduce automation so minimum manual work required)
+Maintain High availability of Viva Engage infrastructure (four 9's is the goal)
+Cost optimization of Viva Engage Infra
+Contribute and participate in cross-organization activities
+
+Prompt:
+Success measures:
+Employee Response:
+Success measure for above are:
+To measure reliability and performance of the Viva Engage.
+Define error budget for each Infrastructure components
+Meet those error budget and reduce 5% error budget YOY
+To measure Manageable Infra solution
+Plan and POC of PSQL storage to manageable infra i.e. on Azure 
+Plan and POC of Mesos to Azure kubernetes services.
+To measure COGS 
+Target 5-10% COGS reduction YOY
+To measure cross-org activities
+Participate in design spec review
+Participate/helping in hiring at company level
+Contribute to FHL event
+Title for core priority number two :COSMIC
+2. COSMIC
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Successfully onboard infrastructure services onto COSMIC.
+help out teams to onboard their services to COSMIC and support other teams on storage solutions in COSMIC.
+Participate in COSMIC design discussion and review.
+
+Prompt:
+Success measures:
+Employee Response:
+Teams Q&A successfully running in GCC 
+Title for core priority number three :Improve Infra On-call experience
+3. Improve Infra On-call experience
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+One of our key focuses is to enhance the on-call experience for the infrastructure team. Areas we are looking to improve include 
+managing the lifecycle of secrets and certificates and reducing the toil of on-call work by implementing more automation for tasks such as patching, deploying, and Terraform changes.
+Prompt:
+Success measures:
+Employee Response:
+We can evaluate the success of the infrastructure on-call experience by measuring the pulse of the Infra OCE (On-Call Engineer) team.
+Title for core priority number four :Manageable PSQL storage
+4. Manageable PSQL storage
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Define path to move PSQL storage solutions to manageable Infra, to achieve below:
+To achieve fault isolation
+more scalability
+avoid single point of failures
+meet M365 compliance
+
+Prompt:
+Success measures:
+Employee Response:
+Come up with various options to achieve above goal for PSQL
+Proof of concept to benchmark new PSQL infra can handle Viva engage storage requirements.
+Plan out the full scale execution to move to new PSQL infra.
+Title for core priority number five :EUDB
+5. EUDB
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+Design and execute routing solutions for tenants in EUDB
+Help out services team on EUDB data migration
+Prompt:
+Success measures:
+Employee Response:
+All EUDB compliance tenant should be migrated to EU stamp
+
+Diversity & Inclusion (D&I) Core Priority
+To realize our mission to empower every person and organization on the planet to achieve more, each and every one of us must help create a diverse and inclusive culture where everyone can bring their full and authentic self, where all voices are heard, and where we do our best work as a result. Consider how you will deliver successful impact by consistently demonstrating Microsoft’s cultural expectations and values.
+Prompt
+Select and commit to at least one focus area from the options below, or create one of your own.
+Employee Selected
+Practice allyship skills in the moment
+Employee Selected
+Engage in constructive 1:1 or group discussions around D&I
+Employee Selected
+Actively participate in Employee Resource Groups
+Employee Selected
+Complete D&I learning, reflect on new knowledge and practice what I learn
+Employee Selected
+Seek diverse perspectives and incorporate feedback, apply insights from a variety of sources and people
+Employee Selected
+Develop or implement inclusive products, processes, or practices
+Employee Selected
+Mentor and/or support a person who may benefit
+Prompt:
+How will you define success as you activate your D&I Core Priority?
+Employee Response:
+n/a
+
+Manager comments
+These are good core priorities, and you have clear measures for success. I am looking forward to seeing the progress on these and the impact they will have for the team.
+
+For COSMIC, we have a number of engineers in the team working on this. Be specific about what you will be delivering. I know you are leading others in some areas, it's ok to state that too. The current goal is that you are accountable for this successfully launching, this is good, but it means you will need to hold others on that team accountable to ensure this happens. I am here to support you in this if needed.
+
+I agree we need to continue to focus on improving our on-call. What specific tasks do you plan on automating? What impact will these have?
+
+
+Identify your opportunities for growth
+
+We are all expected to embrace a growth mindset and focus on continuous learning to deliver successful impact.
+Prompt:
+What 1-2 actions will you take to focus on learning, growth, and development over the next period?
+Employee Response:
+I should take opportunity to represent Infra work to senior leadership team.
+I should have displayed my work more regularly during demo days.
+Target at least 3 demos over the next 6 months
+I should have set aside time to learn new software frameworks/tools.
+Learn on distributed systems to improvise Viva Engage Infrastructure 
+Read books / participate on-line conferences on distributed systems
+Prompt:
+What support do you need to fulfill these actions? Fill in any that apply.
+Prompt:
+Opportunities to (optional):
+Employee Response:
+I would appreciate the opportunity to present infrastructure-related work to the Senior Leadership Team (SLT).
+Prompt:
+Perspective or coaching on (optional):
+Employee Response:
+leadership people management skills
+Prompt:
+Learning on (optional):
+Employee Response:
+No Response
+
+Manager comments
+You have completed many projects and I agree that there is opportunity for you to demonstrate these regularly in the Friday demo days. I'd like you to set a goal for this, maybe 3 demos over the next 6 months?
+
+For presenting to the leadership team, I can help with that. There is going to be important work in moving to GCC compliant storage options, the progress and decisions on this will need to be communicated to senior leaders and I can create opportunities for you to do this. It is going to be critical that we are clear on these presentations and so we can work together to ensure there are no open questions before you present.
+
+What software framework and tools do you want to learn? Again, you need to be specific. I'm happy to support this learning, but there should be a target and possible impact in mind. What will you learn? What will you be able to do with that knowledge?
+Reflect on the past
+Capture what you’ve accomplished and learned since your last Connect.
+Summarize your impact
+
+Core priorities
+Show from previous Connect
+Prompt:
+What impact did you have for each of your core priorities?
+Employee Response:
+The Elasticsearch infrastructure has been modernized by transitioning to Kubernetes.
+Previously, it would take several days to create an ES cluster, but now it can be done within a few hours with just a click of a button.
+Secrets and certificates rotation on ES AKS can now be done easily with a simple button click in just a matter of minutes, whereas before it would take weeks to rotate secrets on older clusters.
+YST manual commands are no longer necessary to manage ES since it is now hosted on AKS, which is managed by Azure.
+Additionally, the AKS cluster size is 60% smaller than the previous clusters.
+Upgrading ES has enabled Viva Answers to utilize semantic search for better results.
+According to our benchmarks, the search and ingestion latency will improve, but we will have to wait until the migration is completed and the traffic is switched over to determine the specific results.
+I provided mentoring and coaching to Stefan to facilitate his learning of Elasticsearch.
+Additionally, I collaborated closely with the Viva Answers team to ensure that they met their deadline.
+I also assisted the CAP team with their migration from Go-Locals to IC3.
+By participating in the onboarding process of Routekey, one of the first infrastructure services, onto COSMIC, I gained valuable knowledge about the COSMIC framework. This experience will enable us to effectively onboard additional services onto COSMIC in the future.
+Diversity & Inclusion (D&I) Core Priority
+Prompt:
+What impact did your actions have in contributing to a more diverse and inclusive Microsoft?
+Employee Response:
+I have attended trainings on D&I
+
+Manager comments
+Feedback from John Boyle:
+Piyush, thank you for all your impact of the period. I really can say over the last few periods you have added complemented your focus on execution with some great partnerships across and leadership across teams. 
+
+Elastic Search: Undoubtably, bringing this to a conclusion with the migration after completing the AKS on ES8 to support Viva Answers is a significant achievement and another part of Storageland is retired. 
+
+PSQL: Passion to advocate for the right choice to host in azure and give the team your valuable insights into migrations following the go-local migrations. 
+
+Cosmic: While elements of the ES migration slowed for bake time and working with the Search team, I am thankful you were able to step into Cosmic and set yourself and the team up with a core knowledge base, building on the AKS experience. 
+
+Continue to be curious across the organization, your input across the org is valuable and I expect that your passion to meet your commitments will be contagious, people often comment on your focus and commitment. 
+
+Disappointed to not to have you working on my team, I have always valued your feedback to me the team – an active retro participant. 
+
+I am sure you and Steve Parr will have a greater impact in the future.
+
+
+Feedback from Steven Parr:
+Great work on transitioning the Elasticsearch infrastructure to use Kubernetes. The ability to create a new cluster in hours and not days will have a long-lasting positive impact on the team with the removal of this toil.
+
+Onboarding Routekey to COSMIC was an important project for the team and was critical in defining a path forward for all services. It is not easy taking on these types of projects with many implications to the services we operate.
+
+You take on the responsibility for your area and have shown a desire to improve processes within the team to deliver more. It is good to see your enthusiasm in this area and I am confident you will continue to improve the processes of the projects you lead.
+
+Reflect on a challenge or setback
+
+Growth mindset is about learning from our mistakes and setbacks to enable our future growth. It's important that we learn and adapt quickly. Then, we can apply what we’ve learned so we can continually grow and deliver greater impact for our teams, customers, and business.
+Prompt:
+Consider when you could have done something differently. How will you apply what you learned to make an even greater impact?
+Employee Response:
+In the initial stages of modernizing the ES infrastructure, I encountered difficulty in effectively communicating the plan to the Viva Answers team, which may have led to some confusion regarding the project timeline. Attending the Viva Answers team standups and regularly engaging with team members through Teams has been instrumental in improving communication of my plans. I have been doing this lately.
+The availability of detailed run-books for AKS would have been beneficial to other members of the infrastructure team. I recently conducted one-on-one meetings with several team members to identify pain points related to run-books and address them.
+
+Manager comments
+Feedback from John Boyle:
+
+It was great that you committed to the Viva Answers team with regular engagement. While the project has delivered, there was a point in Q1 where you did not take the opportunity to make the search team accountable around testing and readiness on ES8.  I think we missed an opportunity to be effectively 4 weeks earlier in delivery, you could have seen this and ensured they had it planned for a greater holistic outcome. 
+
+More generally, you do a lot and take on a lot in the team, continue to focus on giving others clarity on expectations and hold them accountable. As some points I felt you were covering for others on the team or not trusting others with the likes of migration operations and other AKS work. 
+
+On the ES Operation there was some naivety from the team that caused a number of Sev 1 alerts in the early stages of operation and scale up, please be more mindful when rolling out and testing items to not burden the on-call team.  
+
+Lastly please take the time to be more curious and get involved more across the org, Cosmic or other may give you that opportunity to ensure others have more impact.
+
+
+Feedback from Steven Parr:
+You have reflected on the issue with AKS run-books as an area of learning. I see that we have this as a more widespread problem within the team and not just isolated to this instance. Thank you for following up on this and meeting with your peers 1:1 and addressing the gaps in the documentation. Continue to focus on this over the next period. Every time someone reaches out to you in your role as SME, ask yourself if something could be done to avoid this. This is not always possible, but it might be a gap in other run-books, tooling, or training. 
+
+I have seen you identify the issues with how work items are tracked across sprints and not closed by the sprint end. There is an opportunity for you to improve these processes by introducing a more disciplined approach to task estimation and planning. I am looking forward to working with you on this during the upcoming period.
+Plan for the future
+Think about opportunities for impact in the upcoming Connect period.
+Review your core priorities
+
+
+Core priorities
+What are your 3-5 core priorities?
+Title for core priority number one :Engineering Excellence
+1. Engineering Excellence
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+- Improve the reliability and performance of the Yammer.
+- Make Yammer Infra more manageable (introduce automation so minimum manual work required)
+- Maintain High availability of yammer infrastructure (four 9's is the goal)
+- Cost optimization of yammer Infra
+- Contribute and participate in cross-organization activities
+Prompt:
+Success measures:
+Employee Response:
+We have implemented SLOs to track and measure the outcome.
+Identify 2-3 key areas of system/process opportunities and develop a proposal for improvement
+Title for core priority number two :COSMIC
+2. COSMIC
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+I will be working on delivering the Teams Q&A GCC within the COSMIC framework.
+Prompt:
+Success measures:
+Employee Response:
+Successfully onboard infrastructure services onto COSMIC.
+Title for core priority number three :Improve Infra On-call experience
+3. Improve Infra On-call experience
+Prompt:
+Focus areas for the upcoming period to drive business impact:
+Employee Response:
+One of our key focuses is to enhance the on-call experience for the infrastructure team. Areas we are looking to improve include 
+managing the lifecycle of secrets and certificates and reducing the toil of on-call work by implementing more automation for tasks such as patching, deploying, and Terraform changes.
+Prompt:
+Success measures:
+Employee Response:
+We can evaluate the success of the infrastructure on-call experience by measuring the pulse of the Infra OCE (On-Call Engineer) team.
+
+Diversity & Inclusion (D&I) Core Priority
+To realize our mission to empower every person and organization on the planet to achieve more, each and every one of us must help create a diverse and inclusive culture where everyone can bring their full and authentic self, where all voices are heard, and where we do our best work as a result. With this priority, personally commit to be an active and intentional participant in creating a diverse and inclusive Microsoft.
+Prompt
+Select and commit to at least one focus area from the options below, or create one of your own.
+Employee Selected
+Practice allyship skills in the moment
+Employee Selected
+Engage in constructive 1:1 or group discussions around D&I
+Employee Selected
+Actively participate in Employee Resource Groups
+Employee Selected
+Complete D&I learning, reflect on new knowledge and practice what I learn
+Employee Selected
+Seek diverse perspectives and incorporate feedback, apply insights from a variety of sources and people
+Employee Selected
+Develop or implement inclusive products, processes, or practices
+Employee Selected
+Mentor and/or support a person who may benefit
+Prompt:
+How will you define success as you activate your D&I Core Priority?
+Employee Response:
+n/a
+
+Manager comments
+Feedback from Steven Parr:
+I agree with the core priorities in general. The team has a great opportunity to improve Engineering Excellence and the overall On-call Experience. Delivering Teams Q&A on COSMIC GCC is also a business-critical initiative and will also be a core priority. These are common priorities across the team in general.
+
+We need clearer defined measures around these core priorities and where you will have the direct ownership of delivering the desired outcome. For example, COSMIC GCC is being worked on by a number of people in the team, which specific services will you own? Which specific components will you deliver to ensure the team wide goal is achieved?
+
+Similar for Engineering Excellence and On-call Experience, let's define what you will be measured on as an individual towards this team goal. The estimating and planning improvements you are introducing to the team will contribute towards team excellence.
+
+As a SME on the team for a number of technologies we own, one of your core priorities should be to ensure that everyone on the on-call rotation is able to mitigate most issues with those technologies without the need to seek further help. This will contribute to the priority of improving On-call Experience and may cover deliverables such as improve run-books, or training as required.
+Identify your opportunities for growth
+
+Consider what more you want to learn and how you want to grow in your current role.
+Prompt:
+What are the 1-2 actions you will take to energize your learning, growth, and development over the next period?
+Employee Response:
+I plan to attend leadership courses
+I will have one-on-one discussions with other principal engineers and managers to discuss my personal career growth. 
+Additionally, I aim to learn more about new technology areas such as AI/ML and Kubernetes.
+Prompt:
+What support do you need to fulfill these actions? Fill in any that apply.
+Prompt:
+Opportunities to (optional):
+Employee Response:
+No Response
+Prompt:
+Perspective or coaching on (optional):
+Employee Response:
+No Response
+Prompt:
+Learning on (optional):
+Employee Response:
+No Response
+
+Manager comments
+Feedback from Steven Parr:
+In the short time I have been working with you I have seen you demonstrate a growth mindset. I would encourage you to continue to be curious in how you can improve the overall team performance through learning and introducing new processes.
+
+As an organization we have a great opportunity to invest time into AI/ML and Kubernetes and it is good to see these are areas you are interested in learning more about. Let's identify projects that would benefit the overall infrastructure that can incorporate these technologies. If we can deliver these projects to provide clear benefits to the organization then not only will you have accomplished your learning goal, but this would also contribute towards your personal career growth.
+Conversation starters (optional)
+
+Choose any of these optional prompts to continue great conversations with your manager. Write a brief response (1-15 words).
+View Topics
+It can be challenging to prioritize important topics for 1:1 conversations. Plan ahead and flag any of the following topics you’d like to discuss with your manager in upcoming conversations.
+Prompt
+Select any conversation topics below, or add your own:
+Employee Selected
+Career: Discuss ways to grow my career to align with my strengths, interest & aspirations.
+Employee Selected
+Opportunities: Increase my responsibilities, such as new core priorities, stretch assignments, promotion or becoming a people manager.
+Employee Selected
+Learning: Explore potential development and growth opportunities to optimize your performance.
+Employee Selected
+Feedback: Get input on how I'm doing in my role and how to deliver great impact.
+Check out aka.ms/career for resources and guides on developing your career.
+
