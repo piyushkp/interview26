@@ -10,18 +10,22 @@ The design targets a collaborative 60-minute whiteboarding session with future t
 | Collaborative problem-solving | 45-50 min | Sections 1-6 |
 | Candidate questions | 5 min | Appendix: questions for the team |
 
-Within the 45-50 minute core, suggest a time budget: ~5-8 min requirements and scoping, ~3-5 min estimates, ~3-5 min APIs, ~10 min v1 high-level design, ~15 min deep dives and iteration, ~5-7 min failures, scaling, and wrap-up.
+Within the 45-50 minute core, follow the delivery framework timings: ~5 min requirements, ~2 min core entities, ~5 min API, ~5 min optional data flow, ~10-15 min high-level design, ~10 min deep dives (extend to ~15 min with iteration), then failures, scaling, and wrap-up. Estimates are folded in only where they change a decision.
 
 ### Delivery Framework Mapping (Hello Interview)
-The six sections cover the same ground as the common delivery framework (requirements, core entities, API, data flow, high-level design, deep dives). Keep the order below and make the mapping visible:
+The sections follow the delivery framework: requirements, core entities, API, [optional] data flow, high-level design, deep dives. Keep the order below and make the mapping visible. The high-level design's primary goal is to satisfy the **functional** requirements; deep dives' primary goal is to satisfy the **non-functional** requirements.
 
-| Framework step | Section |
-|---|---|
-| Functional and non-functional requirements (top 3-4 features, below-the-line list) | 1 |
-| Back-of-envelope estimates only when they change a decision | 2 |
-| Core entities, then API per functional requirement | 3 and 4.3 |
-| High-level design that satisfies each functional requirement one by one | 4 |
-| Deep dives driven by the non-functional requirements | 5 and 6 |
+| Framework step | Time | Section |
+|---|---|---|
+| Functional requirements (top 3 features) and non-functional requirements (top 3-5, quantified) | ~5 min | 1 |
+| Capacity estimation, only when it changes a decision (otherwise say you will do the math when needed) | as needed | 2 |
+| Core entities (first-draft bulleted list) | ~2 min | 3.1 |
+| API or system interface, one endpoint per functional requirement | ~5 min | 3.2 |
+| [Optional] Data flow, for data-processing/backend pipelines only | ~5 min | 4 (opening) |
+| High-level design, built one API endpoint at a time | ~10-15 min | 4 |
+| Deep dives driven by the non-functional requirements, edge cases, and bottlenecks | ~10+ min | 5 and 6 |
+
+Do not sabotage delivery: a complete, working system that meets the functional requirements comes before depth. Never layer on complexity early; note it with a one-line callout (e.g., "a cache goes here, I'll come back to it") and move on.
 
 ### What Is Evaluated
 Make the response demonstrate each of these explicitly:
@@ -56,6 +60,7 @@ Make the response demonstrate each of these explicitly:
 ## 1. Clarify the Requirements
 
 ### Functional Requirements
+- Phrase as "Users/Clients should be able to..." statements and keep it to the top 3 prioritized features; a long list hurts more than it helps. Ask targeted, client-style questions ("does the system need to do X?", "what happens if Y?") to get there.
 - Identify the primary users, core entities, and highest-priority use cases.
 - Separate read and write operations, including synchronous and asynchronous workflows.
 - Clarify domain-specific semantics such as ordering, delivery guarantees, search, retention, or real-time updates where relevant.
@@ -63,6 +68,7 @@ Make the response demonstrate each of these explicitly:
 - Ask what happens when an input source goes silent or misbehaves (e.g., a driver in a tunnel stops reporting) and what the user-facing latency budget is before they give up.
 
 ### Non-Functional Requirements
+Phrase as "The system should..." statements, put them in the context of this system, and quantify them (not just "low latency", but "search < 500 ms"). Pick the top 3-5 most relevant using this checklist: CAP (consistency vs. availability), environment constraints (mobile battery, memory, bandwidth), scalability (bursty traffic, events, read vs. write ratio), latency, durability, security, fault tolerance, compliance.
 - **Scale:** DAU, MAU where useful, geographic distribution, concurrent users or connections, and peak traffic.
 - **Performance:** End-to-end latency targets for critical operations, including the relevant percentile, such as p99 < 100 ms.
 - **Availability:** Target availability and acceptable degraded behavior. Do not assume five nines without justification.
@@ -78,6 +84,8 @@ Make the response demonstrate each of these explicitly:
 ## 2. Estimation & Scale (Read vs. Write Heavy)
 
 Show inputs, assumptions, formulas, units, and rounded results. Use order-of-magnitude estimates rather than false precision.
+
+Perform calculations only if they directly influence the design. State up front that you will skip detailed upfront estimation and do the math during the design when needed (e.g., a TopK system's topic count decides single min-heap vs. sharded). "It's a lot, so it's distributed" proves nothing; each number must end in a decision.
 
 ### Traffic Estimation
 - Use the supplied DAU or estimate it explicitly; do not infer DAU from MAU without an assumption.
@@ -98,10 +106,18 @@ Show inputs, assumptions, formulas, units, and rounded results. Use order-of-mag
 - Connect the estimates to concrete decisions: cache capacity, read replicas, partitioning, batching, queues, or append-only logs.
 - Compare key numbers to single-host limits (memory, disk, IOPS, network, connections) to justify when partitioning or horizontal scaling becomes necessary.
 
-## 3. Define APIs
+## 3. Core Entities & APIs
 
-Define the contracts for the core use cases using REST or gRPC, choosing the interface that fits the problem.
+### 3.1 Core Entities (first draft)
+- List the core entities as a short bulleted list (the nouns/resources and actors needed to satisfy the functional requirements, e.g., User, Tweet, Follow). Use clear, precise names.
+- Treat it as a first draft: do not write full schemas yet. Fields and relationships are added in 4.3 as the high-level design reveals what state each request updates.
 
+### 3.2 Define APIs
+
+Define the contract between the system and its users, usually one endpoint per functional requirement, using REST, GraphQL, or gRPC. Default to REST unless there is a specific reason not to: GraphQL for diverse clients with different data needs, gRPC/RPC for performance-critical internal service-to-service calls, and WebSockets or SSE for real-time features (design the core API first).
+
+- Use plural-noun resources derived from the core entities (e.g., `POST /v1/tweets`, `GET /v1/feed`).
+- Derive the current user from the authentication token in the request header, never from request bodies or path parameters. Never trust sensitive identifiers supplied by the client.
 - For REST, specify HTTP methods, paths, relevant headers, example request payloads, response structures, and status codes.
 - For gRPC, specify method signatures and request/response messages, including streaming behavior where needed.
 - Include identifiers, pagination, validation, authorization boundaries, and important error cases.
@@ -112,6 +128,10 @@ Define the contracts for the core use cases using REST or gRPC, choosing the int
 
 Present the architecture and a Mermaid diagram showing components, data stores, and synchronous versus asynchronous paths. Explain the responsibilities and boundaries of each component.
 
+- **[Optional] Data flow:** For data-processing or pipeline-style backends (e.g., a web crawler: fetch seeds, parse HTML, extract URLs, store, repeat), first list the high-level sequence of actions as a numbered list and use it to drive the design. Skip it if the system has no long sequence of actions.
+- Build the design one API endpoint at a time, satisfying each functional requirement in order. State what state changes (database, cache, queue) and what is returned at each step, starting from the API request and ending with the response.
+- When a request reaches the persistence layer, document the relevant fields next to the store. Only list fields that matter to the design; skip obvious ones (a User's name, email, password hash).
+- Keep it simple and complete first: meet the core functional requirements, jot a verbal callout for caches, queues, or replicas, and defer them to the deep dives that satisfy the non-functional requirements.
 - Start with a v1 (simplest design that meets core requirements), list its pros and cons, then show the iteration that addresses the most important flaw.
 - Justify synchronous vs. asynchronous communication for each interaction, and batch vs. stream processing where data is processed in bulk.
 
@@ -126,7 +146,7 @@ Present the architecture and a Mermaid diagram showing components, data stores, 
 - Include queues and workers only where asynchronous processing is justified.
 
 ### 4.3 Database
-- Define core entities, relationships, key fields, primary keys, indexes, and main access patterns.
+- Expand the 3.1 entity list into relationships, key fields, primary keys, indexes, and main access patterns; add entities discovered during the design.
 - Choose relational, key-value, document, columnar, object storage, or a combination based on query needs, transactions, consistency, and scale.
 - Model data around the queries it serves, not just the entities it describes.
 - Consider immutable, append-only records (ledgers, event logs) where auditability and correctness matter, deriving current state from history.
@@ -141,7 +161,7 @@ Present the architecture and a Mermaid diagram showing components, data stores, 
 
 ## 5. Deep Dives
 
-Focus detail on the system's most consequential design challenges while covering every subsection below.
+Focus detail on the system's most consequential design challenges while covering every subsection below. Drive the deep dives from the non-functional requirements: for each one, show how the design meets it, then harden the design by addressing edge cases, bottlenecks, and interviewer probes (e.g., Twitter's 100M DAU and low-latency feeds lead to horizontal scaling, caches, sharding, and fan-out-on-read vs. fan-out-on-write). Proactively lead these (more so at senior levels), but leave the interviewer room to ask questions and probe; do not talk over them.
 
 ### 5.1 Test Cases
 - Describe representative functional and integration tests with inputs, expected outcomes, and the invariants they protect.

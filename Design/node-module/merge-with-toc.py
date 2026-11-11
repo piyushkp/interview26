@@ -76,6 +76,8 @@ DOCS = [
      "web-crawler/web-crawler-design.pdf"),
     ("Designing an Ad Click Aggregator",
      "ad-click/ad-click-aggregator-design.pdf"),
+    ("Designing YouTube Sponsored Ads (Platform and Creator-Embedded)",
+     "youtube-sponsor-ads/youtube-sponsor-ads-design.pdf"),
     ("Designing Top-K (YouTube Top Videos / Trending)",
      "top-k/top-k-design.pdf"),
     ("Designing a Distributed Cache",
