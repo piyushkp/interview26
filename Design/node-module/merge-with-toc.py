@@ -112,6 +112,8 @@ DOCS = [
      "gopuff/gopuff-design.pdf"),
     ("Designing a Metrics Monitoring System",
      "metrics/metrics-monitoring-design.pdf"),
+    ("Designing Machine Health Monitoring and Alerting (10K Machines)",
+     "machine-monitoring/machine-monitoring-design.pdf"),
     ("Designing a Notification Service",
      "notifications/notification-service-design.pdf"),
 ]
