@@ -1,0 +1,17 @@
+
+Postgresql upgrade challenges:
+
+- 15 teams were not sure how to sign off on their service is working fine or not post upgrade. I came up with the approach that find out what are the core SLAs scenarios for each service and they can test only SLA impacting scenarios. If SLA scenarios fail we rollback or fix-forward.
+- UI had very generic banner for system outage but for this project we needed specific message with time in it. I have asked the help from the front end team but they were busy with other feature work so i took initiative and made the changes in front end code with the help of AI. everyone on the front end team was happy that we have custom template now for the outage banner.
+- During the prod upgrade on saturday, we had some intermittent issues from azure on provisioning VMs although we procure capacity they were doing some maintanance. We had big meeting during the upgrade with senior leaders on deciding to go ahead with the upgrade or abort it. While few tech leads were concerns and ask for the abort I proposed that we can operate on the minimum nodes (since on weekend we have less customer traffic) and go ahead with the upgrade and once Azure sdks are stable we can provision more nodes. we went ahead with minimium nodes upgrade and on saturday night when azure sdks were stable we proviion full capacity.
+
+- Intially when i present the whole plan to the VP and senior leaders the feedback i got was my presentation was too much technical and senior leaders wanted to act on decision to upgrade the system or not. 
+
+Secret Scanner challenges:
+- Adoption of secret scanner across 15 teams were challenge since every team had their own way to track the secrets and certs (AKVs, hashicrop keyvaults, env files etc..). The approach i toook is to align the leaders first on each team, identify the gaps each team had, and create tharough on-boarding guideline and setup regularly office-hours.
+- Trust and complience clearance for secret scanner approach had some dificulties. 
+- Intially teams reported that they were getting lots of alerts of secret expiry which are their service do not use it. on-line sceret scanner was scanning all the certs/secrets from the VM and reporting it. I iterate it and improvise the secret-scanner to avoid reporting the scerts are not used by services.
+
+
+
+- 
