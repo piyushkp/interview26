@@ -57,6 +57,7 @@ Index:
 11. AI suggestion of kafka offset commit change
 12. FaultLine: Autonomous SRE Sidecar
 13. Search Compute Capacity Conflict
+14. Telemetry Loss in Outlook Email Events: Logs Are Not a Reliable Dependency
 
 ### 1. Postgres & OS Zero-Downtime Upgrade
 
@@ -435,6 +436,38 @@ I learned that when two legitimate priorities collide, an option that creates he
 
 ---
 
+### 14. Telemetry Loss in Outlook Email Events: Logs Are Not a Reliable Dependency
+
+**Context**
+
+For several months, Viva Engage's active-user numbers had been quietly wrong. When someone opens an Engage email in Outlook, such as a digest, a community announcement or a mandatory announcement, YAMS is supposed to emit three events. One, `notification_clicked`, goes through the protobuf pipeline and always arrived. The other two, `yams_thread_called` and `ocular_viewed_messages_thread`, go through the legacy logging pipeline, and they intermittently disappeared, even though the requests reached YAMS successfully.
+
+The stakes were real. In the latest occurrence, Engage daily active users were under-reported by 15 to 20%. Customer-facing analytics such as post reach were likely inaccurate, several thousand customer networks showed signs of impact, and every Outlook client was affected: Windows, Android, iOS and Mac. The problem had come and gone for months and got significantly worse in October. Users were still receiving and reading their emails. What we were losing was the record of it.
+
+**Actions**
+
+The investigation traced the legacy path end to end: YAMS, then the Host Log Collector (HLC), then Eventful, then Analytics. Three facts stood out. Only about 55 to 56 of the 105 YAMS containers in prod-central-1 were affected, not all of them. Protobuf events from the same containers kept flowing. And legacy telemetry recovered around November 5 and 6, right when an HLC deployment went out. Everything pointed at HLC buffering or collection.
+
+The obvious next step was to hunt down the HLC bug, fix it and move on. My contribution was to change the question. HLC was behaving as designed. We designed HLC to drop logs when the host buffers are full, so that a logging backlog can never take the host down. That is the right trade-off for host health, but it makes logs best-effort. Any customer experience or business metric that depends on logs being 100% available will eventually break, whether or not we find this particular trigger. Fixing this one occurrence would only have reset the clock until the next one.
+
+So I reported it that way: this wasn't an HLC bug to chase, it was a dependency that should never have been taken. My recommendation was that the service team collect these metrics through a different mechanism, instead of asking HLC to guarantee a delivery it was deliberately designed not to provide.
+
+**Results**
+
+The conversation shifted from "find the HLC bug" to "stop building active-user and reach metrics on best-effort logs", which addresses the whole class of problem instead of one occurrence. Being clear that this was telemetry loss, not lost email delivery or lost user activity, also kept the response proportionate: a data-correctness fix, not a customer outage. [What mechanism the service team adopted, and whether DAU and post reach were corrected.] [Whether the missing legacy events were backfilled.]
+
+**Learnings**
+
+I learned that when a pipeline drops data by design, the fix belongs with the consumer, not the pipeline. Before building on any pipeline, the first question is what its delivery guarantee is, and customer-facing numbers like DAU and post reach need a guaranteed path, not a best-effort one. Next time I'd make each pipeline's delivery guarantee explicit in its documentation, so teams know what they can and can't build on before they take the dependency.
+
+| Impact | Scope | Personal Contribution | Tech Complexity | Organizational Complexity |
+|---|---|---|---|---|
+| M | M | M | M | M |
+
+**Signals shown:** Ownership, Ambiguity, Communication, Leadership
+
+---
+
 ## Answer Framework
 
 Build the first answer around one real project, not a list of leadership traits:
@@ -509,7 +542,7 @@ These are preparation prompts, not additional claims. Answer from actual project
 For a Principal / Sr. Staff discussion, use scope, judgment and durable outcomes to demonstrate leadership rather than relying on title:
 
 - **Flagship:** Secret Scanner, Search modernization (Elasticsearch fork), IRIS, Maestro, Postgres & OS upgrade.
-- **Supporting (deep technical diagnosis):** Database Health Check; FaultLine for AI-assisted SRE design (a prototype, so state its status honestly).
+- **Supporting (deep technical diagnosis):** Database Health Check; Outlook email telemetry loss (reframing a bug hunt into a dependency decision); FaultLine for AI-assisted SRE design (a prototype, so state its status honestly).
 - **Targeted disagreement, judgment or growth examples:** Cosmos DB cost miss, Kafka offset revert, Rankie, Embeddings, VentSpout jitter. Use when relevant; they do not replace the high-stakes project discussion.
 
 ## Gaps to Fill (real details only)
@@ -802,6 +835,8 @@ The fallback-feed work went to the backlog, since Rankie failures were infrequen
 
 What I learned is to name assumptions early and to bring failure frequency, impact and cost data to the very first conversation.
 
+A more recent example is the Outlook email telemetry loss. Engage daily active users were under-reported by 15 to 20% because two legacy events from YAMS intermittently disappeared on the way to Analytics. The investigation was looking for a bug in the Host Log Collector (HLC), on the assumption that logs should always arrive. HLC was built on the opposite assumption: we designed it to drop logs when host buffers are full, to keep the host alive. Once I named that difference, the question changed from "how do we fix HLC" to "why are customer-facing metrics depending on best-effort logs", and I recommended that the service team collect these metrics through another mechanism.
+
 **Follow-up 1**
 
 > Q: Why did you propose fail-open?
@@ -821,6 +856,11 @@ What I learned is to name assumptions early and to bring failure frequency, impa
 
 > Q: Do you still think you were right?
 > A: My design wasn't adopted, and I think that was reasonable. Rankie failures were infrequent and a backup feed was costly, so the work went to the backlog. I disagreed, made my case with data, and then committed fully. I'd bring failure-frequency and cost data to the first conversation, which would have shortened the debate, and I'd revisit the decision if failures became more frequent, because that changes the numbers.
+
+**Follow-up 5**
+
+> Q: Do you have an example where naming the assumption changed the outcome?
+> A: Yes, the Outlook email telemetry loss. The investigation assumed logs should be reliable and was hunting for an HLC bug. But we designed HLC to drop logs when host buffers are full, to protect the host. Naming that turned it from a bug hunt into a design question: customer-facing metrics like DAU and post reach shouldn't depend on best-effort logs. My recommendation was to move those metrics to another collection mechanism, so the fix covers the whole class of problem, not one occurrence.
 
 ---
 
@@ -1192,6 +1232,8 @@ Read availability reached 99.999%, and the approach became an org-wide operation
 
 What I learned is that a green dashboard is only as good as what it measures, so health checks should test what users depend on.
 
+A second example is the Outlook email telemetry loss, where the analysis led somewhere other than a bug fix. Two legacy events intermittently went missing, under-reporting Engage daily active users by 15 to 20%. The evidence was specific: about 55 to 56 of 105 YAMS containers in prod-central-1 were affected, protobuf events from the same containers kept flowing, and legacy telemetry recovered when an HLC deployment went out. That pointed at the Host Log Collector. The deeper point was that HLC drops logs by design when host buffers fill, so fixing one trigger would only reset the clock. I recommended moving these customer-facing metrics off best-effort logs.
+
 **Follow-up 1**
 
 > Q: Why did every dashboard look healthy?
@@ -1211,6 +1253,11 @@ What I learned is that a green dashboard is only as good as what it measures, so
 
 > Q: What was the fix and result?
 > A: I replaced the connectivity checks with synthetic queries that test real read behavior, and added circuit breaking so a sick node comes out of rotation. Read availability reached 99.999%, and the approach became an org-wide operational template.
+
+**Follow-up 5**
+
+> Q: Have you had an analysis where the answer wasn't a fix?
+> A: Yes, the Outlook email telemetry loss. Everything pointed at the Host Log Collector: only some YAMS containers were affected, protobuf events kept flowing, and telemetry recovered with an HLC deployment. But HLC is designed to drop logs when host buffers are full, to keep the host alive. So the real finding was that DAU and post-reach metrics should never have depended on best-effort logs, and I recommended the service team collect them another way.
 
 ---
 
