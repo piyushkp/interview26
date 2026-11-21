@@ -41,6 +41,16 @@ When I first presented the plan to the VP and senior leaders, the feedback was t
 
 During the Saturday production upgrade, Azure had intermittent VM provisioning issues. We had procured capacity, but Azure was doing maintenance. In the large call with senior leaders on whether to continue or abort, several tech leads were concerned and asked to abort. I proposed a third option: since weekend customer traffic is lower, continue the upgrade on the minimum number of nodes, and add capacity once the Azure SDKs were stable. We went ahead that way, and on Saturday night, when the SDKs were stable, we provisioned full capacity.
 
+One thing did break after the Ubuntu upgrade: GIFs and link previews in messages stopped working. The cause started with how logical replication works. It copies table rows but not sequences, the ID counters PostgreSQL uses to generate new IDs. So on the new Ubuntu cluster, the counters were still at their starting values while the tables already held all the replicated rows, and any new insert would have reused an existing ID.
+
+After the cutover, the team ran a routine script that moved each ID counter past the highest ID already in its table, so new records wouldn't collide with existing ones.
+
+Yammer's legacy tables build their IDs differently. They take the counter and multiply it by 8,192 (shift it left 13 bits) to make the ID. The script didn't account for that, so it copied an already-multiplied ID back into the counter. From then on, every new ID was multiplied twice and came out about 8,000× too large.
+
+Most tables kept working with oversized IDs, so nobody noticed. `open_graph_objects` handles every link and image preview, so it was already the biggest counter in this group. About two days after the upgrade, it went past the 64-bit limit and started producing negative IDs. The workfeed service rejected them, and GIFs and link previews in messages stopped working.
+
+**Fix:** for these tables, divide the highest ID by 8,192 (shift right 13 bits) before setting the counter.
+
 **Results**
 
 I completed all 40 or so clusters and every deployment stamp. The PostgreSQL upgrade averaged about one hour of downtime per cluster, and the OS upgrade needed roughly a five-minute cutover. Incidents involving replication lag, kernel panics and I/O saturation fell by 40%. The upgrades also secured the Trust and security clearance needed for Microsoft 365 integrations, including Teams and Copilot. The Infrastructure team owns the Postgres tooling today.
