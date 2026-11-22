@@ -27,35 +27,42 @@ Negate frequency to sort it descending; add the word as a final key for stable t
 | `test_distance.py:57` | `# self.assertEqual(top_result[0][0], "????")` | `self.assertEqual(top_result[0][0], "hat")` (all four are distance 1; hat has the highest frequency) |
 
 ## 3. Brute force
-**Approach:** compute the full edit distance to every dictionary word, keep those within d, sort, and return the top k.
+**Approach:** The way I approach brute force is to loop over every word in the dictionary and compute its edit distance to the misspelled word, meaning the fewest single-letter inserts, deletes or replacements to turn one into the other. I compute that with dynamic programming, using a 2D table where each cell holds the cost for a prefix of each word. I keep the words that are close enough in a list, sort it by distance, then by frequency (most common first), then alphabetically, and return the top k. It's always correct because it checks every word, but it builds a full table for all 50,000 words, so ten lookups take about 2 seconds.
 
 ```text
-suggest(word, d, k):
-    if k <= 0: return []
-    results = []
-    for (candidate, freq) in dictionary:            # N words
-        dist = levenshtein(word, candidate)         # full DP table, O(L²)
-        if dist <= d: results.append((candidate, dist, freq))
-    sort results by (dist asc, freq desc, word asc)
-    return first k words
+SUGGEST(WORD, MAX_DISTANCE, K)
+    IF K <= 0
+        RETURN EMPTY LIST
+    RESULTS = EMPTY LIST
+    FOR EACH (CANDIDATE, FREQ) IN DICTIONARY
+        DIST = EDIT_DISTANCE(WORD, CANDIDATE)                 // full 2D DP table
+        IF DIST <= MAX_DISTANCE
+            ADD (CANDIDATE, DIST, FREQ) TO RESULTS
+    SORT RESULTS BY DIST ASC, FREQ DESC, CANDIDATE A-Z
+    RETURN FIRST K CANDIDATES OF RESULTS
 ```
 Time **O(N·L² + C log C)**, space **O(L² + C)**. Bottleneck: the full DP for all N words.
 
 ## 4. Optimal
-**Approach:** only check words whose length is within d of the query, stop each distance calculation once it must exceed d, and keep the top k with a heap.
+**Approach:** The way I approach the optimal solution is to skip work that can't change the answer. First, I build a dictionary that maps word length to a list of words, once at startup; since every extra or missing letter costs at least one edit, I only look at words whose length is close to the misspelled word. Second, I still use dynamic programming for the distance, but with just two rows instead of the full table, and I stop early as soon as a whole row is already over the limit, because the numbers can only go up from there. Third, I use a min-heap (`heapq.nsmallest`) to grab the top k suggestions instead of sorting every match. The results are the same as brute force, but ten lookups take a few milliseconds instead of 2 seconds.
 
 **Key insight:** each character of length difference costs at least one edit, so only words with length
 within d of the query can match; and once every cell in a DP row exceeds d, the distance can't come back down.
 ```text
-__init__: words_by_length = {length: [words]}          # built once, O(N)
-suggest(word, d, k):
-    if k <= 0: return []
-    matches = []
-    for length in [len(word)-d, len(word)+d]:
-        for candidate in words_by_length[length]:      # N_d words, not N
-            dist = bounded_levenshtein(word, candidate, d)   # 2 rows; stop when min(row) > d
-            if dist <= d: matches.append((dist, -freq[candidate], candidate))
-    return words of heapq.nsmallest(k, matches)        # O(C log k)
+BUILD_INDEX(DICTIONARY)                                       // once, in __init__
+    FOR EACH WORD IN DICTIONARY
+        ADD WORD TO WORDS_BY_LENGTH[LENGTH(WORD)]
+
+SUGGEST(WORD, MAX_DISTANCE, K)
+    IF K <= 0
+        RETURN EMPTY LIST
+    MATCHES = EMPTY LIST
+    FOR LEN = MAX(0, LENGTH(WORD) - MAX_DISTANCE) TO LENGTH(WORD) + MAX_DISTANCE
+        FOR EACH CANDIDATE IN WORDS_BY_LENGTH[LEN]
+            DIST = BOUNDED_EDIT_DISTANCE(WORD, CANDIDATE, MAX_DISTANCE)   // 2 DP rows, stops early
+            IF DIST <= MAX_DISTANCE
+                ADD (DIST, -FREQ[CANDIDATE], CANDIDATE) TO MATCHES
+    RETURN CANDIDATES OF THE K SMALLEST MATCHES                // min-heap
 ```
 Time **O(N_d·L·d)** typical, O(N_d·L²) worst; space **O(N)** index + **O(C + L)** per query.
 
