@@ -1,8 +1,5 @@
 # Max Unique Characters — Summary
 
-Variables: n = valid words, u = distinct character sets (u ≤ n), A = alphabet size (26 letters or 10 digits),
-L = word length.
-
 ## 1. Problem
 `WordList` filters words to those in the alphabet with no repeated characters, and has two bugs. Implement
 `MaxUniqueSolver.solve()` to pick words that share no characters and maximize the total unique characters,
@@ -31,56 +28,70 @@ shared character ("abc" and "cde" share "c"). Use `== 0`.
 `words_months.txt`; `words.py` is unchanged.
 
 ## 3. Brute force
-**Approach:** The way I approach brute force is with recursion (backtracking): I go through the list of valid words one at a time, and for each word I try two options, skip it or take it. I only take a word if it shares no letters with the words already picked, and I keep the picked words in a simple list. When I reach the end of the list, I count the unique letters and remember the best list I've seen. This always finds the right answer because it tries every possible combination, but the number of combinations doubles with each word, so it's O(2^n) and 300 words take about 48 seconds.
+**Algorithm:** backtracking, which tries taking or skipping each word.
+
+**Data structures:**
+- list: the words I picked
+- set per word: its letters, to spot shared letters
+
+**Approach:** I will go through the words one at a time. For each word, I try skipping it and I try taking it. I only take it if it shares no letter with my picks. At the end, I keep the group with the most letters. It's correct because every group is tried, but 300 words take 48 s.
 
 ```text
-SOLVE(WORDS)
-    BEST = EMPTY LIST
-    BACKTRACK(WORDS, 0, EMPTY LIST)
-    RETURN BEST
+def solve(words):
+    best = []
+    backtrack(0, [])
+    return best
 
-BACKTRACK(WORDS, INDEX, PICKED)
-    IF INDEX == LENGTH(WORDS)
-        IF UNIQUE_CHARS(PICKED) > UNIQUE_CHARS(BEST)
-            BEST = PICKED
-        RETURN
-    BACKTRACK(WORDS, INDEX + 1, PICKED)                       // skip the word
-    IF WORDS[INDEX] SHARES NO LETTER WITH ANY WORD IN PICKED
-        BACKTRACK(WORDS, INDEX + 1, PICKED + WORDS[INDEX])    // take the word
+def backtrack(i, picked):
+    if i == len(words):
+        if unique_chars(picked) > unique_chars(best): best = picked
+        return
+    backtrack(i + 1, picked)                    # skip words[i]
+    if words[i] shares no letter with picked:   # are_compatible, O(n)
+        backtrack(i + 1, picked + [words[i]])   # take words[i]
 ```
 Time **O(2^n · n·L)** worst case, space **O(n)** recursion. Bottleneck: it re-explores every combination,
 including ones that can't beat the best found.
 
+*Where:* n = valid words, L = word length.
+
 ## 4. Optimal
-**Approach:** The way I approach the optimal solution is still recursion (DFS with backtracking), but with three tricks. First, I store each word as a bitmask, an integer where each bit stands for one letter, so checking if two words share a letter is one `&` operation, and I use a dictionary from bitmask to word so duplicate words and anagrams are kept only once. Second, every time I pick a word, I pass down only the words that don't clash with it, so the list of choices gets smaller with each pick, and I try longer words first so I find a good answer early. Third, I prune: if the letters still available can't beat my best score, I stop going down that path, and I stop completely once every letter is used. It gives the same answer as brute force, in about 0.1 seconds instead of 48.
+**Algorithm:** depth-first search with pruning, which goes deep on one choice and gives up early on paths that can't win.
 
-**Key insight:** if even taking every remaining compatible character can't beat the best, the branch is dead;
-and once all A characters are used, nothing can beat it.
+**Data structures:**
+- bitmask per word: a number where each bit is one letter, so comparing two words is one step
+- dictionary: bitmask → word, to drop duplicates and anagrams
+- list: the words still allowed at each step
+
+**Approach:** I will turn each word into a bitmask. First, I keep one word per set of letters, since anagrams give the same result. Second, after each pick, I only keep words that don't clash with it. Third, I give up on a path if it can't beat my best. It gives the same answer as the brute force in 0.1 s instead of 48 s.
+
+**Key insight:** if a path can't beat my best even using every letter left, I can stop it.
+
 ```text
-SOLVE(WORDS)
-    MASKS = BITMASK OF EACH WORD, ONE PER DISTINCT MASK      // bit i = letter i
-    SORT MASKS BY NUMBER OF 1 BITS, LARGEST FIRST
-    BEST = EMPTY LIST
-    DFS(MASKS, 0, EMPTY LIST)
-    RETURN WORDS FOR BEST
+def solve(words):
+    masks = one bitmask per distinct word, longest first    # bit i = letter i
+    dfs(masks, 0, [])
+    return words for best
 
-DFS(CHOICES, USED, PICKED)
-    IF BITS(USED) > BITS(BEST)                                // BITS = number of 1 bits = letters used
-        BEST = PICKED
-    IF BITS(USED OR ALL CHOICES) <= BITS(BEST)                // prune: can't beat best
-        RETURN
-    FOR EACH MASK M IN CHOICES
-        REST = MASKS AFTER M IN CHOICES WHERE (MASK AND M) == 0   // no shared letters
-        DFS(REST, USED OR M, PICKED + M)
+def dfs(choices, used, picked):
+    if bits(used) > bits(best): best = picked               # bits = letters used
+    if bits(used | all choices) <= bits(best): return       # prune: can't beat best
+    for m in choices:
+        rest = [c for c in choices after m if c & m == 0]   # no shared letters
+        dfs(rest, used | m, picked + [m])
 ```
 Time **O(2^u)** worst case, far less in practice (each pick removes every overlapping word, depth ≤ A);
 space **O(u·A)** for the candidate lists on the stack.
+
+*Where:* u = distinct letter sets (u ≤ n), A = alphabet size (26 letters or 10 digits).
 
 ## 5. Complexity
 | | Time | Space |
 |---|---|---|
 | Brute force | O(2^n · n·L) | O(n) |
 | Optimal | O(2^u) worst, pruned in practice | O(u·A) |
+
+*Where:* n = valid words, L = word length, u = distinct letter sets (u ≤ n), A = alphabet size.
 
 Measured: Wordle (250 words) **0.30 s → 5 ms**; large list (300 words) **47.6 s → 105 ms** (the test limit is 3 s);
 10,000 random words **38 ms**. Both always return the same total.

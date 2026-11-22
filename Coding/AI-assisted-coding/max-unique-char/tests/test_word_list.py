@@ -1,5 +1,10 @@
 """Tests for WordList."""
 
+import os
+import sys
+
+# NEW: lets this file run directly (python3 test_x.py); run.sh's PYTHONPATH still takes priority.
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "solution", "src"))
 import unittest
 
 from word_list import WordList

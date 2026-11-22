@@ -1,6 +1,11 @@
 # NEW FILE: not in the original. Tests the new solution-only methods (bounded_compute, suggest_brute_force).
 """Solution-only checks: the optimized code must agree with the brute force on random inputs."""
 
+import os
+import sys
+
+# NEW: lets this file run directly (python3 test_x.py); run.sh's PYTHONPATH still takes priority.
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "solution", "src"))
 import random
 import string
 import threading

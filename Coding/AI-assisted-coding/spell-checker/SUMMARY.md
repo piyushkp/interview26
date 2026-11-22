@@ -1,8 +1,5 @@
 # Spell Checker — Summary
 
-Variables: N = dictionary size, L = word length, d = `max_distance`, k = `max_suggestions`,
-N_d = words whose length is within d of the query, C = matches within d.
-
 ## 1. Problem
 `EditDistance` computes Levenshtein distance (insert, delete, substitute) and has two bugs. Implement
 `Checker.suggest(word, max_distance=2, max_suggestions=5)` to return corrections ranked by distance
@@ -27,50 +24,63 @@ Negate frequency to sort it descending; add the word as a final key for stable t
 | `test_distance.py:57` | `# self.assertEqual(top_result[0][0], "????")` | `self.assertEqual(top_result[0][0], "hat")` (all four are distance 1; hat has the highest frequency) |
 
 ## 3. Brute force
-**Approach:** The way I approach brute force is to loop over every word in the dictionary and compute its edit distance to the misspelled word, meaning the fewest single-letter inserts, deletes or replacements to turn one into the other. I compute that with dynamic programming, using a 2D table where each cell holds the cost for a prefix of each word. I keep the words that are close enough in a list, sort it by distance, then by frequency (most common first), then alphabetically, and return the top k. It's always correct because it checks every word, but it builds a full table for all 50,000 words, so ten lookups take about 2 seconds.
+**Algorithm:** check every word.
+
+**Data structures:**
+- grid: edit counts for one word at a time
+- list: the words that are close enough
+
+**Approach:** I will check every word in the dictionary. For each one, I count how many letter edits turn the typo into it. I keep the close ones, sort them, and return the top few. Closest comes first, then the most common word, then A to Z. Nothing is skipped, so it's correct, but 10 lookups take 2.1 s.
 
 ```text
-SUGGEST(WORD, MAX_DISTANCE, K)
-    IF K <= 0
-        RETURN EMPTY LIST
-    RESULTS = EMPTY LIST
-    FOR EACH (CANDIDATE, FREQ) IN DICTIONARY
-        DIST = EDIT_DISTANCE(WORD, CANDIDATE)                 // full 2D DP table
-        IF DIST <= MAX_DISTANCE
-            ADD (CANDIDATE, DIST, FREQ) TO RESULTS
-    SORT RESULTS BY DIST ASC, FREQ DESC, CANDIDATE A-Z
-    RETURN FIRST K CANDIDATES OF RESULTS
+def suggest(word, max_d, k):
+    if k <= 0: return []
+    results = []
+    for candidate, freq in dictionary:
+        d = edit_distance(word, candidate)   # full 2D DP table, O(L²)
+        if d <= max_d: results.append((candidate, d, freq))
+    sort results by (d asc, freq desc, word a-z)
+    return first k words
 ```
 Time **O(N·L² + C log C)**, space **O(L² + C)**. Bottleneck: the full DP for all N words.
 
+*Where:* N = dictionary size, L = word length, C = matches within `max_distance`.
+
 ## 4. Optimal
-**Approach:** The way I approach the optimal solution is to skip work that can't change the answer. First, I build a dictionary that maps word length to a list of words, once at startup; since every extra or missing letter costs at least one edit, I only look at words whose length is close to the misspelled word. Second, I still use dynamic programming for the distance, but with just two rows instead of the full table, and I stop early as soon as a whole row is already over the limit, because the numbers can only go up from there. Third, I use a min-heap (`heapq.nsmallest`) to grab the top k suggestions instead of sorting every match. The results are the same as brute force, but ten lookups take a few milliseconds instead of 2 seconds.
+**Algorithm:** check only likely words, stop early, keep the top few with a heap.
 
-**Key insight:** each character of length difference costs at least one edit, so only words with length
-within d of the query can match; and once every cell in a DP row exceeds d, the distance can't come back down.
+**Data structures:**
+- dictionary: word length → words, to jump to similar lengths
+- two grid rows: all I need to count edits
+- heap: always hands me the best match, so I don't sort everything
+
+**Approach:** I will skip words that can't win. First, I only check words of similar length, because each extra letter costs an edit. Second, I stop counting once a word is clearly too far away. Third, I use a heap to grab the top few instead of sorting all matches. It gives the same answer as the brute force in milliseconds instead of 2.1 s.
+
+**Key insight:** a word much longer or shorter than the typo can never be close enough.
+
 ```text
-BUILD_INDEX(DICTIONARY)                                       // once, in __init__
-    FOR EACH WORD IN DICTIONARY
-        ADD WORD TO WORDS_BY_LENGTH[LENGTH(WORD)]
+words_by_length = {length: [words]}                             # built once in __init__
 
-SUGGEST(WORD, MAX_DISTANCE, K)
-    IF K <= 0
-        RETURN EMPTY LIST
-    MATCHES = EMPTY LIST
-    FOR LEN = MAX(0, LENGTH(WORD) - MAX_DISTANCE) TO LENGTH(WORD) + MAX_DISTANCE
-        FOR EACH CANDIDATE IN WORDS_BY_LENGTH[LEN]
-            DIST = BOUNDED_EDIT_DISTANCE(WORD, CANDIDATE, MAX_DISTANCE)   // 2 DP rows, stops early
-            IF DIST <= MAX_DISTANCE
-                ADD (DIST, -FREQ[CANDIDATE], CANDIDATE) TO MATCHES
-    RETURN CANDIDATES OF THE K SMALLEST MATCHES                // min-heap
+def suggest(word, max_d, k):
+    if k <= 0: return []
+    matches = []
+    for length in len(word) - max_d .. len(word) + max_d (not below 0):
+        for candidate in words_by_length[length]:
+            d = bounded_edit_distance(word, candidate, max_d)   # 2 DP rows, stops early
+            if d <= max_d: matches.append((d, -freq, candidate))
+    return k smallest matches                                   # min-heap
 ```
 Time **O(N_d·L·d)** typical, O(N_d·L²) worst; space **O(N)** index + **O(C + L)** per query.
+
+*Where:* N = dictionary size, N_d = words whose length is within d of the query, d = `max_distance`, L = word length, C = matches, k = `max_suggestions`.
 
 ## 5. Complexity
 | | Time per query | Space |
 |---|---|---|
 | Brute force | O(N·L² + C log C) | O(L² + C) |
 | Optimal | O(N_d·L·d + C log k) | O(N) index, O(C + L) per query |
+
+*Where:* N = dictionary size, N_d = words within d of the query length, d = `max_distance`, L = word length, C = matches, k = `max_suggestions`.
 
 Measured on 10 misspellings: large dictionary (50,084 words) **2.10 s → < 0.01 s**. With 50,000 random
 words all of length 5 (length filter can't help) **1.34 s → 0.80 s**. Next step: trie + DP rows.
