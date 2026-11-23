@@ -81,7 +81,7 @@ During the Saturday production upgrade, Azure had intermittent VM provisioning i
 
 **Results**
 
-I completed all 40 or so clusters and every deployment stamp. The PostgreSQL upgrade averaged about one hour of downtime per cluster, and the OS upgrade needed roughly a five-minute cutover. Incidents involving replication lag, kernel panics and I/O saturation fell by 40%. The upgrades also secured the Trust and security clearance needed for Microsoft 365 integrations, including Teams and Copilot. The Infrastructure team owns the Postgres tooling today.
+I completed all 40 or so clusters and every deployment stamp. The PostgreSQL upgrade averaged about one hour of downtime per cluster, and the OS upgrade needed roughly a five-minute cutover. Incidents involving replication lag, kernel panics and I/O saturation fell by 40%. The upgrades also secured the Trust and security clearance needed for Microsoft 365 integrations, including Teams and Copilot, and once those integrations shipped, Viva Engage's daily active users grew 30%. The Infrastructure team owns the Postgres tooling today.
 
 **Learnings**
 
@@ -411,22 +411,22 @@ The search team asked me to scale the Elasticsearch nodes substantially, with mo
 
 **Actions**
 
-I disagreed with simply provisioning more, and I drove the resolution in four steps.
+I disagreed with simply provisioning more, and I drove the resolution in four steps, proposing three options that needed less compute.
 
-1. **I pushed back and asked for efficiency and evidence.** I asked the search team's tech lead to improve the search model, which had a very large query fan-out, so it needed less compute, and to run his experiments in pre-prod to get benchmarks before rolling out to prod.
+1. **I pushed back and proposed cutting the load.** I asked the search team's tech lead to lower the search model's query fan-out, so each search sends fewer requests to the servers and needs less compute. I also asked him to run his experiments in pre-prod to get benchmarks before rolling out to prod.
 2. **I took his constraints seriously.** He replied that they had no pre-prod environment at production scale and that optimizing the models wasn't feasible in the short term. That was a legitimate limit, so I stopped pressing for it, but I also couldn't approve open-ended compute. We didn't resolve it, and he raised it to the leadership team because the Copilot integration rollout was getting delayed. With the COGS increase, it reached the VP level.
-3. **I engaged the leadership team with the trade-off.** I presented the competing constraints directly: scarce Azure capacity, rising COGS and the Copilot timeline. We agreed to roll out the experiments to fewer users until the models improved enough to need less compute.
-4. **I raised the option that created headroom.** I proposed moving non-SLA workloads to a different cluster to free up compute in the meantime. The tech lead agreed, and I carried it forward.
+3. **I engaged the leadership team with the trade-off and a smaller rollout.** I presented the competing constraints directly: scarce Azure capacity, rising COGS and the Copilot timeline. I proposed indexing data only for the users eligible for the A/B experiments, instead of the whole user base, so the feature could roll out to those users without more compute. We agreed to roll out to them until the models improved enough to need less compute.
+4. **I raised the option that created headroom.** I proposed moving non-SLA traffic to the DR region to free up compute in the meantime. The tech lead agreed, and I carried it forward.
 
 **Results**
 
-The non-SLA workload move freed up about 30% of capacity, and the limited rollout let the experiments continue within it. My pre-prod benchmarking request wasn't adopted, because a production-scale pre-prod environment didn't exist.
+Moving non-SLA traffic to the DR region freed up about 30% of capacity, and indexing only the A/B users' data let the experiments roll out within it. My pre-prod benchmarking request wasn't adopted, because a production-scale pre-prod environment didn't exist.
 
 The change that lasted was a regular sync between the search team and me on progress improving search model efficiency. It turned a disagreement over compute into a shared, recurring commitment to make the models need less, and it kept that commitment visible instead of letting it depend on a one-off escalation.
 
 **Learnings**
 
-I learned that when two legitimate priorities collide, an option that creates headroom, like moving non-SLA workloads, gives leaders and the other team something to agree on, and that a recurring sync keeps an agreement from fading. I also learned to check that my ask is feasible, since a prod-scale pre-prod environment didn't exist.
+I learned that when two legitimate priorities collide, options that shrink the need or create headroom, like indexing only the A/B users or moving non-SLA traffic to the DR region, give leaders and the other team something to agree on, and that a recurring sync keeps an agreement from fading. I also learned to check that my ask is feasible, since a prod-scale pre-prod environment didn't exist.
 
 | Impact | Scope | Personal Contribution | Tech Complexity | Organizational Complexity |
 |---|---|---|---|---|
@@ -642,7 +642,7 @@ On certification and alignment, I narrowed the question for the service teams. I
 
 Two other moments show ownership. The UI only had a generic outage banner, and customers needed a specific message with the maintenance time. The front-end team was busy, so I made the change myself with AI help, and they now have a reusable custom template. Then on the Saturday production upgrade, Azure had intermittent VM provisioning issues from its own maintenance. Several tech leads wanted to abort. I proposed continuing on the minimum nodes, since weekend traffic is lower, and provisioning full capacity once the Azure SDKs were stable, which happened that night.
 
-The result: all 40 or so clusters and every deployment stamp completed, about one hour of PostgreSQL downtime per cluster and a roughly five-minute OS cutover. Incidents involving replication lag, kernel panics and I/O saturation fell by 40%, and the upgrades secured the Trust and security clearance needed for Microsoft 365 integrations, including Teams and Copilot. [Baseline: the number of customers and the refund exposure at risk.] The Infrastructure team owns the Postgres tooling today.
+The result: all 40 or so clusters and every deployment stamp completed, about one hour of PostgreSQL downtime per cluster and a roughly five-minute OS cutover. Incidents involving replication lag, kernel panics and I/O saturation fell by 40%, and the upgrades secured the Trust and security clearance needed for Microsoft 365 integrations, including Teams and Copilot. Once those integrations shipped, Viva Engage's daily active users grew 30%. [Baseline: the number of customers and the refund exposure at risk.] The Infrastructure team owns the Postgres tooling today.
 
 What I learned is that a sound migration design isn't enough for a high-risk upgrade. Rollback planning, early executive alignment and a bounded, achievable definition of working for each team matter as much as the technology.
 
@@ -719,26 +719,26 @@ I have three conflict examples: one with the search team's tech lead on compute 
 
 The search team asked me to scale the Elasticsearch nodes substantially, with more GPU and memory, because they were running many experiments with the latest search models at production scale. Azure had a capacity crunch, so I had to allocate compute wisely. Meanwhile the Copilot integration rollout depended on that work, and the extra compute was increasing the COGS budget.
 
-I disagreed with simply provisioning more, and I drove the resolution in four steps. First, I pushed back directly with the search team's tech lead: I asked him to improve the search model, which had a very large query fan-out, so it needed less compute, and to run his experiments in pre-prod to get benchmarks before rolling out to prod. Second, I took his answer seriously: they had no pre-prod environment at production scale, and optimizing the models wasn't feasible in the short term. We didn't resolve it, and he raised it to the leadership team because the Copilot rollout was getting delayed. With the COGS increase, it reached the VP level. Third, I engaged the leadership team with the trade-off directly: scarce Azure capacity, rising COGS and the Copilot timeline. We agreed to roll out the experiments to fewer users until the models improved enough to need less compute. Fourth, I raised the option that created headroom: moving non-SLA workloads to a different cluster. The tech lead agreed, and I carried it forward.
+I disagreed with simply provisioning more, and I drove the resolution in four steps. First, I pushed back directly with the search team's tech lead: I proposed lowering the search model's query fan-out, so each search sends fewer requests to the servers, and asked him to run his experiments in pre-prod to get benchmarks before rolling out to prod. Second, I took his answer seriously: they had no pre-prod environment at production scale, and optimizing the models wasn't feasible in the short term. We didn't resolve it, and he raised it to the leadership team because the Copilot rollout was getting delayed. With the COGS increase, it reached the VP level. Third, I engaged the leadership team with the trade-off directly: scarce Azure capacity, rising COGS and the Copilot timeline. I proposed indexing data only for the users eligible for the A/B experiments, instead of the whole user base, so the feature could roll out to them without more compute, and we agreed to that until the models improved enough to need less compute. Fourth, I raised the option that created headroom: moving non-SLA traffic to the DR region. The tech lead agreed, and I carried it forward.
 
-The move freed up about 30% of capacity, and the limited rollout let the experiments continue within it. My pre-prod benchmarking request wasn't adopted, since a production-scale pre-prod environment didn't exist, and I accepted that. What lasted was a regular sync between the search team and me on progress improving search model efficiency, which turned a compute dispute into a shared, recurring commitment.
+The move freed up about 30% of capacity, and indexing only the A/B users' data let the experiments roll out within it. My pre-prod benchmarking request wasn't adopted, since a production-scale pre-prod environment didn't exist, and I accepted that. What lasted was a regular sync between the search team and me on progress improving search model efficiency, which turned a compute dispute into a shared, recurring commitment.
 
 What I learned is that when two legitimate priorities collide, an option that creates headroom gives leaders and the other team something to agree on, and a recurring sync keeps the agreement from fading. I also learned to check that my ask is feasible.
 
 **Follow-up 1**
 
 > Q: Why did you disagree with just adding compute?
-> A: Azure had a capacity crunch and the added compute was increasing COGS. I wanted the model to need less compute, and benchmarks before prod rollout.
+> A: Azure had a capacity crunch and the added compute was increasing COGS. I wanted the model to need less compute, for example by lowering its query fan-out so each search sent fewer requests to the servers, and I wanted benchmarks before prod rollout.
 
 **Follow-up 2**
 
 > Q: What was his concern, and how did you treat it?
-> A: He had no prod-scale pre-prod environment and thought optimizing the models wasn't feasible, while the Copilot integration rollout was being delayed. I treated those as legitimate, which is why I stopped pressing for pre-prod benchmarks and raised an option that created capacity instead.
+> A: He had no prod-scale pre-prod environment and thought optimizing the models wasn't feasible, while the Copilot integration rollout was being delayed. I treated those as legitimate, which is why I stopped pressing for pre-prod benchmarks and raised options that needed less compute or created capacity instead: indexing only the A/B users, and moving non-SLA traffic to the DR region.
 
 **Follow-up 3**
 
 > Q: How did you reach the resolution, and who proposed what?
-> A: It reached the VP level because of the Copilot delay and COGS. I engaged the leadership team with the trade-off, and we agreed to roll out the experiments to fewer users until the models need less compute. I raised moving non-SLA workloads to a different cluster, the tech lead agreed, and it freed up about 30% of capacity.
+> A: It reached the VP level because of the Copilot delay and COGS. I engaged the leadership team with the trade-off and proposed indexing data only for the users eligible for the A/B experiments, so the feature could roll out to them without more compute. We agreed to that until the models need less compute. I also proposed moving non-SLA traffic to the DR region, the tech lead agreed, and it freed up about 30% of capacity.
 
 **Follow-up 4**
 

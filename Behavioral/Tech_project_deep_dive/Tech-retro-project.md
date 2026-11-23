@@ -1,6 +1,6 @@
 # Technical Retrospective: PostgreSQL 9.6 → 18.6 and Ubuntu 18.04 → 25.04 Upgrade
 
-> **Format:** 45-minute interactive discussion with a Senior Engineer. Treat it like onboarding a new teammate onto the project: whiteboard, code and trade-offs, not slides.
+> **Format:** 45-minute interactive discussion with a Senior Engineer **[confirm the presenting vs. discussion split before making any deck, §0]**. Treat it like onboarding a new teammate onto the project: whiteboard, code and trade-offs, not slides.
 > **Goal:** show the project at every level, from why it existed down to `pg_upgrade` flags, replication slots and cutover steps, and defend each decision when asked "what if you'd done it differently?"
 >
 > **Evidence rule:** everything here comes from your story bank, Connect notes and your answers. Items marked **[confirm]** are gaps or my inferences. Verify them before the interview, and don't present them as fact until you have. PostgreSQL and Ubuntu behavior described as background (collation, logical replication limits, version changes) is public, documented behavior.
@@ -9,14 +9,18 @@
 
 ## 0. Run Plan (45 minutes)
 
+**Confirm the format first [confirm with the recruiter]:** how much of the session is you presenting and how much is discussion, whiteboard or deck, and who's in the room. Don't build a deck until you know.
+- **All discussion (the plan below assumes this):** whiteboard only, and let the interviewer steer.
+- **Short presentation, then discussion:** present for 10–15 minutes (§1.1 why, the §3 diagram, the §4 two-phase design, the §9.1 headline), then hand over. If they want slides, keep it to about 5: why it mattered, architecture (the §3 PNG), the two-phase design, roadblocks, results.
+
 | Time | Segment | What's on the whiteboard |
 |---|---|---|
-| 0–4 min | Context, **why it was critical**, why now (§1, §1.1) | Nothing yet. Say it in plain words. End on "this was the gate to Teams integration." |
+| 0–4 min | Context, **why it was critical**, why now (§1, §1.1) | Nothing yet. Say it in plain words. End on "this was the gate to the Teams and Copilot integrations." |
 | 4–6 min | Requirements and constraints (§2) | A short list: downtime budget, no data loss, rollback, ~40 clusters, 15 teams |
-| 6–12 min | Starting architecture (§3) | **Diagram 1:** one cluster: primary, standby, up to 50 replicas, pooler, services |
+| 6–12 min | Starting architecture and failover (§3, §3.1) | **Diagram 1:** one cluster: Bouncie → HAProxy → pgbouncer → PostgreSQL, primary → standby → cascading replicas (up to 50), ZooKeeper control plane |
 | 12–25 min | The core design: two phases and why (§4–§6) | **Diagram 2:** Phase 1 `pg_upgrade` on the same OS, Phase 2 logical replication to a new OS |
 | 25–33 min | Roadblocks (§8). **Lead with §8.9**, the executive ask for a no-outage test: it's your strongest leadership story | **Diagram 3:** the cutover sequence, and where sequences broke |
-| 33–38 min | Results, impact and lessons (§9–§10) | The chain: upgrade → CVEs cleared → Teams integration; plus the metrics |
+| 33–38 min | Results, impact and lessons (§9–§10) | The chain: upgrade → CVEs cleared → Teams and Copilot integrations → **+30% DAU**; plus the metrics |
 | 38–45 min | Interviewer's "what if" probes (§11) | Whatever they ask for |
 
 **Steer, don't lecture.** After each segment, pause: "Want me to go deeper on the replication side or on the rollout?" The interviewer will drive into the details. Your job is to make every box on the whiteboard something you can explain two levels down.
@@ -36,7 +40,11 @@
 | People | Led **10–15 engineers**; **15 service teams** (~150 engineers) had to certify |
 | Phase 1 downtime | **~1 hour per cluster**, as a **write outage**: Engage stayed readable (§5.4) |
 | Phase 2 cutover | **~5 minutes** (OS move via logical replication) |
-| Outcome | **Critical CVEs cleared** and Trust requirements met → **unblocked Viva Engage's integration with Microsoft Teams**; incidents involving **replication lag, kernel panics and I/O saturation down 40%**; replication lag eliminated; faster indexing; Infrastructure team owns the tooling today |
+| Outcome | **Critical CVEs cleared** and Trust requirements met → **unblocked Viva Engage's integrations with Microsoft Teams and Microsoft 365 Copilot**, which grew **Viva Engage DAU by 30%**; incidents involving **replication lag, kernel panics and I/O saturation down 40%**; replication lag eliminated; faster indexing; Infrastructure team owns the tooling today |
+| Adoption | **15 service teams** certified with the core-SLA model; status post **seen by 173 people**; the front-end team reuses the banner template; the Infrastructure team owns the upgrade tooling |
+| Cost | **[confirm]** Extra Azure compute: the old nodes stayed up as the rollback path while new nodes came up, in both phases, and I worked with the Azure compute capacity team to get it. Also engineer time (10–15 engineers × how many months), and the **cost of not acting**: unpatchable CVEs, the blocked Teams and Copilot integrations, and refunds if customers saw downtime |
+
+Use these numbers in two ways: as the **constraints** that shaped the design (10 TB, 50 replicas, 15 teams, a 1-hour window) and as **proof the decisions worked** (−40% incidents, CVEs cleared, Teams and Copilot unblocked, +30% DAU).
 
 ---
 
@@ -44,7 +52,7 @@
 
 **Opening (≈60 seconds, say it out loud):**
 
-"Viva Engage's data tier ran on about 40 PostgreSQL 9.6 clusters on Ubuntu 18.04 VMs in Azure. Each holds about 10 TB, and the largest has a primary, a standby and 50 read replicas. PostgreSQL 9.6 has been end-of-life since November 2021, there were open critical CVEs, and Microsoft's Trust requirements weren't met. That blocked Viva Engage from integrating with Microsoft Teams, which has strict security requirements, and with other M365 surfaces like Copilot. So we had to move every cluster forward two ways: the database engine nine major versions, and the operating system underneath it. We had to do it without losing data, with a bounded downtime budget, and with 15 service teams that all depend on these clusters able to sign off that their service still worked. I owned it end to end and led 10 to 15 engineers through it."
+"Viva Engage's data tier ran on about 40 PostgreSQL 9.6 clusters on Ubuntu 18.04 VMs in Azure. Each holds about 10 TB, and the largest has a primary, a standby and 50 read replicas. PostgreSQL 9.6 has been end-of-life since November 2021, there were open critical CVEs, and Microsoft's Trust requirements weren't met. That blocked Viva Engage from integrating with Microsoft Teams and Microsoft 365 Copilot, which both have strict security requirements. So we had to move every cluster forward two ways: the database engine nine major versions, and the operating system underneath it. We had to do it without losing data, with a bounded downtime budget, and with 15 service teams that all depend on these clusters able to sign off that their service still worked. I owned it end to end and led 10 to 15 engineers through it."
 
 ### 1.1 Why it was critical to the organization
 
@@ -54,12 +62,12 @@ This wasn't routine maintenance. Four pressures met on the same clusters:
 |---|---|---|
 | **Security** | Open critical CVEs on PostgreSQL 9.6 and Ubuntu 18.04 | 9.6 has been end-of-life since November 2021, so new vulnerabilities would never get community patches. Every month added exposure that couldn't be fixed in place. |
 | **Compliance** | Microsoft's Trust requirements unmet | Every Viva Engage service sits on these clusters, so a single non-compliant data tier fails the whole product's review |
-| **Business growth** | **Integration with Microsoft Teams** and other M365 surfaces (Copilot) | Teams has strict security requirements for anything integrated into it. Viva Engage couldn't ship into Teams while its database carried open critical CVEs on an unsupported version. **The upgrade was on the critical path of the product strategy, not beside it.** |
+| **Business growth** | **Integrations with Microsoft Teams and Microsoft 365 Copilot** | Both have strict security requirements for anything integrated into them. Viva Engage couldn't ship into Teams or Copilot while its database carried open critical CVEs on an unsupported version. **The upgrade was on the critical path of the product strategy, not beside it.** |
 | **Reliability** | Recurring incidents involving replication lag, kernel panics and I/O saturation | Those incident classes were tied to the old engine and kernel, so they would keep recurring on 9.6 and 18.04 |
 
 And everything depended on it: all 15 Viva Engage service teams (~150 engineers) ran on these clusters, so a bad upgrade risked customer-visible downtime and refunds across the whole product. That's why it needed a careful design, not just a version bump.
 
-**One line to use:** "Clearing these CVEs wasn't the goal in itself. It was the gate that let Viva Engage integrate with Microsoft Teams."
+**One line to use:** "Clearing these CVEs wasn't the goal in itself. It was the gate that let Viva Engage integrate with Microsoft Teams and Copilot, and those integrations grew our daily active users by 30%."
 
 ### 1.2 My role: what I owned, built and delegated
 
@@ -89,8 +97,8 @@ I owned the project end to end, from design and runbook through cross-org alignm
 | Product managers | Customer messaging | Banner text |
 | Front-end team | Busy with feature work | I built the banner template myself (§8.8) |
 | YES team | The LAB environment | Upgraded LAB together |
-| Trust and Security | CVEs cleared, Trust requirements met | The upgrade itself, which unblocked Teams (§9.3) |
-| Azure | Capacity and quota | Procured capacity; the minimum-node decision when provisioning failed (§8.4) |
+| Trust and Security | CVEs cleared, Trust requirements met | The upgrade itself, which unblocked Teams and Copilot (§9.3) |
+| Azure compute capacity team | Fair use of scarce capacity, and their own maintenance | I worked with them to get extra compute ahead of each window, because the old nodes stayed up as the rollback path next to the new ones; then the minimum-node decision when provisioning failed (§8.4) |
 
 In the interview, use **roles**, not names.
 
@@ -139,41 +147,85 @@ In the interview, use **roles**, not names.
 
 ## 3. Starting Architecture (Diagram 1)
 
-Draw one cluster first, then say "times ~40, across deployment stamps".
+Draw one cluster first, then say "times ~40, across deployment stamps". Draw it in three layers, top to bottom: **how clients get in**, **the replication tree**, and **the control plane that watches it**.
+
+**Detailed diagram** (keep it open as a reference; draw the simpler version below on the whiteboard):
+
+![PostgreSQL cluster architecture](Postgresql_architecture.png)
+
+**Whiteboard version:**
 
 ```mermaid
-flowchart LR
-    subgraph STAMP["Deployment stamp: Postgres clusters are stamp-wide, not per cell"]
-        subgraph C0["Cell 0"]
-            S0["Java services"] --> B0["PgBouncer, cell 0"]
+flowchart TB
+    APP["Java and infra services"] --> BO["Bouncie: client routing"]
+    BO -->|"SQL :9232"| PH
+    subgraph CLUSTER["One PostgreSQL cluster per stamp, ~10 TB, ×~40 clusters"]
+        subgraph PRIM["Primary node: reads and writes"]
+            PH["HAProxy :9232"] --> PB["pgbouncer ×4 or ×8, :9233+"] --> PP[("PostgreSQL :5432")]
+            AG["Node agents: postie, upstream_watcher, upstream_updater"]
         end
-        subgraph CN["Cell N"]
-            SN["Java services"] --> BN["PgBouncer, cell N"]
-        end
-        ZK["ZooKeeper: who is primary, registered by Postie"]
-        ZK -.-> B0
-        ZK -.-> BN
-        B0 -->|writes| PR[("Primary PG 9.6, Ubuntu 18.04, ~10 TB")]
-        BN -->|writes| PR
-        B0 -->|reads| RN[("Read replicas, up to 50")]
-        BN -->|reads| RN
-        PR -->|"WAL streaming"| SB[("Standby")]
-        PR -->|"WAL streaming"| RN
+        SP[("Standby: hot standby, failover target")]
+        PP ==>|"WAL streaming"| SP
+        SP ==>|WAL| RA[("Tier-1 replica A")]
+        SP ==>|WAL| RB[("Tier-1 replica B")]
+        RA ==>|WAL| RA2[("Tier-2 replicas A1, A2 …")]
+        RB ==>|WAL| RB2[("Tier-2 replicas B1, B2 …")]
+        RB -.->|WAL| AN[("Analytics / snapshot replica")]
     end
-    PR -.->|"IDs generated here flow into other stores"| DS[("Downstream stores, e.g. Cosmos DB")]
+    AN -->|"WAL archive"| BLOB[("Azure Blob Storage")]
+    subgraph CP["Control plane"]
+        ZK[("ZooKeeper: health and topology")]
+        SC["Scrapie: bans an unhealthy primary"]
+        UI["Bouncie UI"]
+    end
+    AG -.->|"health every 5 s"| ZK
+    SC <--> ZK
+    ZK -.->|"who is primary"| BO
+    ZK -.-> UI
+    PP -.->|"IDs flow out"| DS[("Downstream stores, e.g. Cosmos DB")]
 ```
 
-What to say about each box:
+Every node, including the standby and each replica, runs the same stack: HAProxy → pgbouncer → PostgreSQL, plus the node agents.
+
+What to say about each box, in plain words:
+- **Bouncie (client routing):** services don't hard-code a database address. Bouncie reads ZooKeeper to find the right node and connects to it on port **9232**. Writes go to whichever node ZooKeeper says is the primary.
+- **Every node runs the same stack:** **HAProxy :9232** → **pgbouncer** (4 processes, 8 on machines with more than 20 CPUs, ports 9233+) → **PostgreSQL :5432**. HAProxy spreads connections across the pgbouncers, and pgbouncer pools connections so thousands of clients share a few database connections.
+- **Node agents (systemd services) on every node:**
+  - **postie** posts the node's health to ZooKeeper every 5 seconds: healthy or corrupted, system ID, timeline, state, checkpoint, upstream, databases and WAL positions (LSNs). It's an *ephemeral* entry, so if the node dies, its entry disappears on its own.
+  - **upstream_watcher** watches ZooKeeper for "who is master" and "who is banned", and acts on it (restart, shut down, or promote).
+  - **upstream_updater** points the node at the right upstream to stream WAL from.
 - **Primary:** takes all writes. WAL (write-ahead log) records every change.
-- **Standby:** a physical replica kept ready for failover.
-- **50 read replicas:** the workload is read-heavy, so reads fan out. Each replica runs a `walreceiver` process that connects to a `walsender` on the primary over the libpq **streaming replication protocol** (TCP) and replays WAL byte for byte. Physical replication means a replica is a block-for-block copy of the primary. That's important for both phases: a physical replica must run the **same major version** and, in practice, the **same glibc collation** as its source.
+- **Standby:** a hot standby (it can serve reads) and the **only direct child of the primary**, so it's the one and only automatic failover target.
+- **Cascading replicas, up to 50:** the primary only streams WAL to the standby. The standby feeds **tier-1** replicas, and they feed **tier-2** replicas. The tree is defined in ZooKeeper (`/bouncie/{env}/{cluster}` replications). This keeps the primary from sending the same WAL 50 times. Each replica runs a `walreceiver` that pulls WAL from its upstream's `walsender` (set by `primary_conninfo`) and replays it byte for byte. Physical replication means a replica is a block-for-block copy, so it must run the **same major version** and, in practice, the **same glibc collation** as its source. That matters for both phases.
+- **Analytics / snapshot replica:** a tier-2 replica that also archives WAL to **Azure Blob Storage** (`blob_wal_archive`), for point-in-time recovery and seeding.
+- **ZooKeeper (control plane):** the source of truth. It holds each node's health (`/{bouncie azure path}/{node_ip}`), the replication tree, `/upstreams/{host}`, `/master`, `/banned/{ip}`, and the `/autofailover` and `/autoupstream` switches.
+- **Scrapie:** a checker that reads ZooKeeper, validates the topology, and bans an unhealthy primary. It bans **at most 2 nodes**, so a bad health check can't take down the whole cluster.
+- **Bouncie UI:** a read-only view of every cluster's topology and health.
 - **Stamps, cells and networks:** a deployment stamp is an independent production environment. It contains cells, and customer networks (tenants) live in cells. The **Postgres clusters are stamp-wide**: one cluster serves every cell in the stamp, with a single writable primary.
-- **PgBouncer per cell:** each cell's services connect through that cell's PgBouncer, which routes writes to the primary and reads to the replicas.
-- **ZooKeeper + Postie:** ZooKeeper holds which node is the current primary, and Postie is the component that registers it. **[confirm Postie's exact role and how PgBouncer picks up a primary change.]**
 - **IDs leave Postgres:** IDs generated in Postgres propagate into other stores such as Cosmos DB. That's why a split brain here isn't a local problem: corrupted IDs spread across the system (§8.9).
 - **VMs** come from the storage **image factory** (a baked PostgreSQL + Ubuntu image). As part of this work, I trimmed unnecessary packages from that image.
 
 **Pain points on 9.6 / 18.04** (the reason for the 40% incident drop): replication lag, kernel panics, I/O saturation.
+
+### 3.1 How automatic failover works
+
+![PostgreSQL automatic failover sequence](Postgres-failover.png)
+
+In plain words:
+1. **Report health.** Every 5 seconds, postie on each node writes its health to ZooKeeper.
+2. **Detect and ban.** Scrapie reads that data. If the primary is unhealthy or its data looks wrong, Scrapie bans it by creating `/banned/{primary}` with a status. It only does this if `/autofailover` is on and no more than 2 nodes are already banned.
+3. **Fence the old primary.** The upstream_watcher on the primary sees the ban and follows the status: restart postie, restart PostgreSQL, or **shut down the primary**. To shut down, it stops postie and PostgreSQL, waits 30 seconds, then sets the status to `FailoverSecondary`.
+4. **Promote the standby.** Only the standby, the sole direct child of the primary, acts. When the status is `FailoverSecondary`, **or the ban is older than 360 seconds** (the old primary is too dead to answer), it promotes itself, clears its `primary_conninfo`, and sets `FailoverComplete`.
+5. **Reroute.** ZooKeeper now shows the new primary, and Bouncie sends writes to it on port 9232. The tier-1 replicas already stream from the standby, so they keep following it without being re-pointed.
+
+Why it's designed this way (good probe answers):
+- **Fence first, then promote.** The old primary shuts itself down before the standby takes over, so there are never two writable primaries (no split brain, §8.9).
+- **A timeout for a dead primary.** If the old primary can't even shut itself down, the standby still promotes after 360 seconds.
+- **One candidate, no election.** Only the standby can be promoted, so two nodes can never race to become primary.
+- **A safety cap.** Scrapie bans at most 2 nodes, so a buggy check can't ban everything.
+- **Cascading pays off here too.** Replicas hang off the standby, so after a failover the tree stays intact.
+
+**Link to the upgrade [confirm]:** during the `pg_upgrade` window the primary is down on purpose. If `/autofailover` were still on, Scrapie would ban it and the 9.6 standby would promote itself, which is a split brain across versions. So autofailover has to be switched off for the window, and the replication tree in ZooKeeper has to be rebuilt for the new-version nodes.
 
 ---
 
@@ -208,14 +260,14 @@ flowchart LR
 
 ### 4.3 Decision log: the calls that shaped the project
 
-| # | Decision | Alternatives | Who pushed back, and how it was settled | Section |
-|---|---|---|---|---|
-| 1 | Two phases: `pg_upgrade` on the same OS, then logical replication to the new OS | Dump/restore; in-place OS upgrade + `REINDEX`; physical replica on the new OS | Driven by the collation risk and 10 TB per cluster | §4.1–4.2 |
-| 2 | **No production canary without a write outage.** Upgrade under a write outage and validate in-window with Microsoft's own tenant (MSIT) | Route only Cell 0 to a new-version node; dry run, then revert; give MSIT dedicated clusters | The executive sponsor asked for a no-outage test. Principal engineers showed my Cell 0 option would cause a split brain. I accepted it, documented the reviewers, and recommended the safe path | §8.9 |
-| 3 | Certify **core end-user scenarios** only, with a pre-agreed rollback rule | Exhaustive end-to-end testing | Teams couldn't define "working"; the bounded scope made it achievable | §7, §8.1 |
-| 4 | Non-SLA cohort first, then the 7 SLA clusters **in parallel** via the ADO pipeline | Cluster by cluster | Parallelism shrank the total outage window | §5.6 |
-| 5 | **Continue on minimum nodes** when Azure provisioning failed | Abort | Several tech leads wanted to abort; I proposed the reversible middle path | §8.4 |
-| 6 | Keep the old nodes after the OS cutover as the rollback target | Decommission at cutover | Cheap insurance; trade-off: writes made after cutover | §6.3 |
+| # | Decision | Whose call | Alternatives | Who pushed back, and how it was settled | Section |
+|---|---|---|---|---|---|
+| 1 | Two phases: `pg_upgrade` on the same OS, then logical replication to the new OS | **Mine** **[confirm reviewers]** | Dump/restore; in-place OS upgrade + `REINDEX`; physical replica on the new OS | Driven by the collation risk and 10 TB per cluster | §4.1–4.2 |
+| 2 | **No production canary without a write outage.** Upgrade under a write outage and validate in-window with Microsoft's own tenant (MSIT) | **Mine**, after principal engineers broke my first option | Route only Cell 0 to a new-version node; dry run, then revert; give MSIT dedicated clusters | The executive sponsor asked for a no-outage test. Principal engineers showed my Cell 0 option would cause a split brain. I accepted it, documented the reviewers, and recommended the safe path | §8.9 |
+| 3 | Certify **core end-user scenarios** only, with a pre-agreed rollback rule | **Mine**; Amruta ran the coordination | Exhaustive end-to-end testing | Teams couldn't define "working"; the bounded scope made it achievable | §7, §8.1 |
+| 4 | Non-SLA cohort first, then the 7 SLA clusters **in parallel** via the ADO pipeline | **Mine** (I built the pipeline) | Cluster by cluster | Parallelism shrank the total outage window | §5.6 |
+| 5 | **Continue on minimum nodes** when Azure provisioning failed | **My proposal**; senior leaders agreed on the call | Abort | Several tech leads wanted to abort; I proposed the reversible middle path | §8.4 |
+| 6 | Keep the old nodes after the OS cutover as the rollback target | **[confirm]** | Decommission at cutover | Cheap insurance; trade-off: writes made after cutover | §6.3 |
 
 ---
 
@@ -246,12 +298,12 @@ flowchart LR
 
 ### 5.2 Rollback in link mode (a likely probe)
 
-Once the new cluster starts in link mode, the old data directory is no longer safe to start, because both clusters share the same files. So the rollback point can't be "start 9.6 again". It has to be something the upgrade never touched. **[confirm which you used: the un-upgraded standby kept as the rollback node, an Azure disk snapshot taken right before the window, or both.]** Your Connect notes say **rollback testing took longer than expected**. Own that: proving a rollback path for 10 TB is expensive, and it's the step most teams skip.
+Once the new cluster starts in link mode, the old data directory is no longer safe to start, because both clusters share the same files. So the rollback point can't be "start 9.6 again". It has to be something the upgrade never touched. We **kept the old 9.6 nodes running** next to the new ones until validation passed, so a rollback meant switching back to them, not rebuilding 10 TB. That's why I needed extra compute from the Azure compute capacity team for every window. **[confirm: which old nodes were kept (standby, replicas or both), whether you also took an Azure disk snapshot, and when the old nodes were released.]** Your Connect notes say **rollback testing took longer than expected**. Own that: proving a rollback path for 10 TB is expensive, and it's the step most teams skip.
 
 ### 5.3 The 50 replicas
 
 A physical replica can't stream from a different major version, so every replica and the standby must be rebuilt after the primary moves to 18.6.
-- **Options:** `pg_basebackup` from the new primary (10 TB × 50 = 500 TB pulled from one primary, which saturates it), cascading replicas (rebuild a few, then seed the rest from them), the `rsync --hard-links` method from the `pg_upgrade` docs, or provisioning new VMs from the image and seeding from snapshots. **[confirm your method]**
+- **Options:** `pg_basebackup` from the new primary for every replica (10 TB × 50 = 500 TB pulled from one primary, which saturates it), rebuilding along the existing cascade tree (primary → standby → tier 1 → tier 2, §3) so each node seeds only from its upstream, the `rsync --hard-links` method from the `pg_upgrade` docs, or provisioning new VMs from the image and seeding from snapshots or the Blob WAL archive. **[confirm your method]**
 - **Bring back a minimum set first.** The primary plus a minimum number of replicas come back inside the window, and the rest are added afterward. This is what saved the Saturday production night (§8.4): when Azure VM provisioning was failing, we ran on the minimum set, because weekend traffic is lower, and provisioned full capacity that night once the Azure SDKs were stable.
 
 ### 5.4 The ~1-hour window: a write outage, not a full outage
@@ -381,6 +433,14 @@ sequenceDiagram
 
 Use the same shape for each one: **what happened → technical root → what I did → what I'd do differently.**
 
+**What changed during delivery (quick map).** The discussion often moves from architecture to one of these three angles. Have a story ready for each:
+
+| If they ask how you… | Story | One line to open with |
+|---|---|---|
+| **Negotiated scope** | §8.1, §8.9 | "Fifteen teams couldn't define 'working', so I narrowed it to core SLA scenarios with a rollback rule agreed in advance. And when the sponsor asked for a no-outage test, I wrote up options and we agreed on an in-window MSIT canary instead." |
+| **Got another team to adopt something** | §8.1, §8.8, §9.2 | "All 15 service teams adopted one certification model. The front-end team now reuses the banner template I built. And the Infrastructure team owns the upgrade tooling today." |
+| **Changed direction after an assumption proved wrong** | §8.9, §8.4, §8.5, §8.7 | "I assumed we could isolate Cell 0. Principal engineers showed it would cause a split brain, so I dropped my own option." Backups: full capacity at cutover (§8.4), logical replication copying sequences (§8.5), and an engineer-style briefing for the VP (§8.7). |
+
 ### 8.1 Fifteen teams couldn't say how to sign off
 - **What happened:** about 15 service teams (~150 engineers) depended on these clusters, and none of them could say how they'd prove their service still worked after the upgrade. Unit and integration tests had gaps. End-to-end suites were risky and expensive to run. And a maintenance window can't stay open while 15 teams debate what "working" means.
 - **Root cause:** there was no shared, bounded definition of "working". Certification was open-ended, so it couldn't fit in a window and gave nobody a clear go/rollback signal.
@@ -395,7 +455,7 @@ Use the same shape for each one: **what happened → technical root → what I d
 Covered in §4.2. It drove the entire two-phase design.
 
 ### 8.4 Azure VM provisioning failed on the production Saturday
-- **What happened:** in the middle of the production upgrade, Azure had intermittent VM provisioning failures. We had procured the capacity, but Azure was doing maintenance, so new nodes intermittently failed to come up. **[confirm: these were the new replica/standby VMs being provisioned as part of the window (§5.3).]** We held a large call with senior leaders to decide whether to go ahead or abort, and several tech leads were concerned and asked to abort.
+- **What happened:** in the middle of the production upgrade, Azure had intermittent VM provisioning failures. I had worked with the Azure compute capacity team to secure extra capacity, since the old nodes stayed up for rollback, but Azure was doing maintenance, so new nodes intermittently failed to come up. **[confirm: these were the new replica/standby VMs being provisioned as part of the window (§5.3).]** We held a large call with senior leaders to decide whether to go ahead or abort, and several tech leads were concerned and asked to abort.
 - **The options:**
 
 | Option | Upside | Downside |
@@ -445,7 +505,7 @@ Proving a way back for 10 TB clusters is slow. Next time I'd schedule rollback r
 
 - **What happened:** before production, the executive sponsor asked us to test MSIT (Microsoft's own tenant) on the new PostgreSQL version **without** taking a write outage for other tenants. The real goal, as another leader put it, was to give service teams more time to test on migrated data than a ~1-hour cutover window allows. That goal was legitimate.
 - **What I did:** I wrote up three options, posted them to the org with the production plan (seen by 173 people), and asked the experts directly whether they had concerns:
-  1. **Isolated Cell 0 testing:** bring up new-version nodes and route only Cell 0's writes to them through that cell's PgBouncer config, with Postie stopped so ZooKeeper wouldn't promote the new node.
+  1. **Isolated Cell 0 testing:** bring up new-version nodes and route only Cell 0's writes to them through Bouncie routing **[confirm: per-cell routing config]**, with postie stopped so ZooKeeper wouldn't promote the new node.
   2. **Dry run under a full write outage:** test MSIT on the new version, then revert it to 9.6, accepting possible data loss for MSIT.
   3. **Dedicated clusters for MSIT:** partition MSIT's data out of the shared clusters.
 - **The pushback, and why it was right:**
@@ -463,7 +523,7 @@ Proving a way back for 10 TB clusters is slow. Next time I'd schedule rollback r
 
 ### 9.1 The headline (say this first)
 
-"The upgrade cleared the open critical CVEs and met Microsoft's Trust requirements, and that opened the path for Viva Engage to integrate with Microsoft Teams, which had been blocked by Teams' security requirements. On the way, incidents involving replication lag, kernel panics and I/O saturation dropped 40%, replication lag was eliminated, and indexing got faster. Every one of the ~40 production clusters was upgraded."
+"The upgrade cleared the open critical CVEs and met Microsoft's Trust requirements, and that opened the path for Viva Engage to integrate with Microsoft Teams and Microsoft 365 Copilot, which had been blocked by their security requirements. After those integrations shipped, Viva Engage's daily active users grew 30%. On the way, incidents involving replication lag, kernel panics and I/O saturation dropped 40%, replication lag was eliminated, and indexing got faster. Every one of the ~40 production clusters was upgraded."
 
 ### 9.2 Positive outcomes
 
@@ -471,7 +531,7 @@ Proving a way back for 10 TB clusters is slow. Next time I'd schedule rollback r
 |---|---|---|
 | **Security** | Open critical CVEs on the database and OS **cleared**; every cluster back on supported PostgreSQL and Ubuntu releases, so future CVEs can be patched | **[confirm: number of CVEs cleared, and their severity]** |
 | **Compliance** | Microsoft **Trust requirements met** for the Viva Engage data tier | |
-| **Business** | **Unblocked Viva Engage's integration with Microsoft Teams** (Teams' strict security requirements were the gate), and the wider M365 integrations, including Copilot | **[confirm: what Teams integration shipped afterward, and when]** |
+| **Business** | **Unblocked Viva Engage's integrations with Microsoft Teams and Microsoft 365 Copilot** (their strict security requirements were the gate); after they shipped, **Viva Engage DAU grew 30%** | The upgrade was the gate, not the growth itself: say "it unblocked the integrations that drove +30% DAU". **[confirm: the DAU baseline and time window, and when each integration shipped]** |
 | **Reliability** | Incidents involving **replication lag, kernel panics and I/O saturation down 40%** | **[confirm the baseline window and how you counted]** |
 | **Replication** | Replication lag **eliminated** | **[confirm the measurement: replica replay lag before and after]** |
 | **Performance** | Faster indexing, lower latency, better data throughput | **[confirm a number if you have one]** |
@@ -483,9 +543,9 @@ Proving a way back for 10 TB clusters is slow. Next time I'd schedule rollback r
 | **Efficiency** | The parallel ADO pipeline shrank the total outage window for the 7 SLA clusters | **[confirm: time per cluster sequentially vs. in parallel]** |
 | **Org reach** | 15 service teams (~150 engineers) aligned on one certification model; status posts reached 173 people | |
 
-### 9.3 Why the Teams path matters (if asked "so what?")
+### 9.3 Why the Teams and Copilot path matters (if asked "so what?")
 
-Teams has strict security requirements for anything integrated into it. A product whose data tier runs an end-of-life database with open critical CVEs can't pass that bar, however good the product is. So the chain was: **upgrade → CVEs cleared and Trust requirements met → Viva Engage can integrate with Microsoft Teams.** **[confirm the specific Teams/Trust review or gate the upgrade unblocked.]**
+Teams and Copilot have strict security requirements for anything integrated into them. A product whose data tier runs an end-of-life database with open critical CVEs can't pass that bar, however good the product is. So the chain was: **upgrade → CVEs cleared and Trust requirements met → Viva Engage integrates with Teams and Copilot → +30% daily active users.** **[confirm the specific Teams/Copilot/Trust review or gate the upgrade unblocked.]**
 
 ---
 
@@ -546,13 +606,13 @@ The slot holds WAL, and the publisher's disk fills. That's the biggest operation
 **[confirm before the interview.]** 25.04 is an interim release with about 9 months of support (EOL January 2026). Expect this question. Have the real reason ready, or confirm whether the target was actually an LTS release such as 24.04, or whether you moved on to a newer one.
 
 **Q10. 500 TB of replica seeding: how did you avoid crushing the new primary?**
-**[confirm your method.]** Options: cascading replication (seed a few, then seed the rest from them), seeding from disk snapshots, and bringing up the minimum set first and the rest in waves.
+**[confirm your method.]** We already run a cascade tree (§3), so the natural answer is to rebuild along it: the primary seeds only the standby, the standby seeds tier 1, and tier 1 seeds tier 2. Other options: seeding from disk snapshots or the Blob WAL archive, and bringing up the minimum set first and the rest in waves.
 
 **Q11. How did you know data was correct after Phase 2?**
 **[confirm.]** Row counts per table, checksums over key ranges, `amcheck` on B-tree indexes, and the core SLA scenarios as the functional check.
 
 **Q12. What if traffic were 10x?**
-With 50 replicas already, read fan-out isn't the first limit; WAL volume is. Each physical replica streams the full WAL, so the primary's network and `walsender` capacity become the bottleneck. I'd use cascading replication so the primary only feeds a few relays, and, longer term, shard so no single primary owns 10 TB.
+With 50 replicas already, read fan-out isn't the first limit; WAL volume is. We already use cascading replication, so the primary only streams to the standby (§3). At 10x, the limits move to the standby and tier-1 relays (each one feeds several replicas) and to WAL replay speed on each replica. I'd add more tier-1 relays to spread the fan-out, and, longer term, shard so no single primary owns 10 TB.
 
 **Q13. What was the riskiest moment, and what did you do?**
 The production Saturday, when Azure provisioning was failing and leads wanted to abort. I found the reversible middle option (minimum nodes during low weekend traffic, full capacity once Azure was stable) instead of a binary go/no-go (§8.4).
@@ -568,7 +628,7 @@ The window dates were fixed, and a generic outage banner would have told custome
 
 
 **Q17. Why would Teams care about your database's CVEs?**
-Because Teams' security bar covers the whole stack behind anything integrated into it, not just the API surface. A data tier on an end-of-life PostgreSQL version with open critical CVEs is a standing risk that can't be patched in place, so it fails that bar no matter how secure the Viva Engage application code is. Upgrading to supported PostgreSQL and Ubuntu releases cleared the CVEs, met Microsoft's Trust requirements, and made future CVEs patchable. That's what opened the path to integrate Viva Engage with Teams. **[confirm the specific review or gate.]**
+Because Teams' security bar covers the whole stack behind anything integrated into it, not just the API surface. A data tier on an end-of-life PostgreSQL version with open critical CVEs is a standing risk that can't be patched in place, so it fails that bar no matter how secure the Viva Engage application code is. Upgrading to supported PostgreSQL and Ubuntu releases cleared the CVEs, met Microsoft's Trust requirements, and made future CVEs patchable. That's what opened the path to integrate Viva Engage with Teams and Copilot. **[confirm the specific review or gate.]**
 
 
 **Q18. An executive asks for something you think is unsafe. What do you do?**
@@ -583,7 +643,7 @@ It was a write outage, not a full outage. Writes stopped and the banner told use
 
 ## 12. Whiteboard Cheat Sheet
 
-1. **Diagram 1 (§3):** primary → standby + 50 replicas via WAL streaming, a pooler in front, Java and infra clients.
+1. **Diagram 1 (§3, §3.1):** Bouncie → HAProxy :9232 → pgbouncer → PostgreSQL on every node; primary → standby → tier-1 → tier-2 replicas (cascading WAL); ZooKeeper + postie + Scrapie on the side. Be ready to walk the failover: ban → fence the old primary → promote the standby → Bouncie reroutes.
 2. **Diagram 2 (§4):** the 9.6/18.04 → 18.6/18.04 → 18.6/25.04 arrow chain, labeled with *why that order*.
 3. **Diagram 3 (§6.3):** the cutover sequence. Circle the sequence-sync step and tell the §8.5 story there.
 
@@ -597,9 +657,9 @@ Keep a **legend** on the whiteboard: **solid** arrows for synchronous client tra
 |---|---|---|
 | 1 | Target Ubuntu version (25.04 vs. an LTS) | §11 Q9 will be asked |
 | 2 | `pg_upgrade --link`? What does "20" mean (minutes for `pg_upgrade`)? | §5.1, §5.4 |
-| 3 | Phase 1 rollback point: the un-upgraded standby, a disk snapshot, or both | §5.2 |
+| 3 | Phase 1 rollback: which old nodes were kept running, whether you also took a disk snapshot, how much extra Azure compute that needed, and when old nodes were released | §5.2 |
 | 4 | Replica rebuild method for 50 replicas | §5.3, §11 Q10 |
-| 5 | Pooler type, failover mechanism, sync vs. async standby | §3, §11 Q6 |
+| 5 | Sync vs. async standby (pooler and failover are now in §3 and §3.1) | §3, §11 Q6 |
 | 6 | Database collation (`en_US.UTF-8` vs. `C`) | §4.2 |
 | 7 | Extensions; data checksums on 9.6 | §5.1 |
 | 8 | Whether you evaluated `pglogical` or managed Flexible Server | §4.1, §11 Q1/Q4 |
@@ -612,11 +672,13 @@ Keep a **legend** on the whiteboard: **solid** arrows for synchronous client tra
 | 15 | Banner: how it's driven (config/flag, time parameters, time zone), and whether the front-end team reviewed it | §8.8, §11 Q16 |
 | 16 | Typical number of core SLA scenarios per team, and whether you reviewed the lists | §8.1, §11 Q14 |
 | 17 | Number and severity of CVEs cleared | §9.2 |
-| 18 | The specific Teams/Trust security gate the upgrade unblocked, and what Teams integration shipped afterward | §1.1, §9.3, §11 Q17 |
+| 18 | The specific Teams/Copilot/Trust security gate the upgrade unblocked, when each integration shipped, and the baseline and time window for the +30% DAU | §1.1, §9.2, §9.3, §11 Q17 |
 | 19 | **PostgreSQL 16 vs 18.6** (the May 2025 thread says 16) | Consistency everywhere |
 | 20 | Owner and headcount per workstream | §1.2 |
 | 21 | Production dates for the non-SLA cohort, the SLA cohort and the OS move | §1.4 |
-| 22 | Postie's role, and how PgBouncer follows a primary change | §3 |
+| 22 | Whether autofailover was switched off during the upgrade window, and how the ZooKeeper replication tree was rebuilt for new-version nodes | §3.1 |
 | 23 | Read path during the write outage, and the final rule for MSIT writes before a rollback | §5.4, §11 Q20 |
 | 24 | Rollbacks count; time saved by the parallel pipeline; what's been reused since | §9.2, §10.1 |
 | 25 | Whether the N-1 version policy is really your proposal | §10.2 |
+| 26 | **Session format:** time presenting vs. discussion, whiteboard or deck, who's in the room | §0 |
+| 27 | **Cost:** extra Azure capacity during Phase 2, engineer-months, and any refund or SLA exposure you avoided | Fact Sheet |
