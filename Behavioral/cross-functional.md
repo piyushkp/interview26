@@ -27,17 +27,63 @@
 
 ## 1. My Cross-Functional Operating Model
 
-Have these ready to name, because every story below shows one or more of them:
+Have these ready to name, because every story below shows one or more of them. Don't recite the list. Use one principle as the one-line takeaway after a story, for example: "That's why I always look for the reversible middle option."
+
+### Communication and alignment
 
 | # | Principle | Where it shows up |
 |---|---|---|
 | 1 | **Align leaders first, then make adoption easy.** Get each team's lead on board, then give engineers docs, office hours and clear steps. | Secret Scanner, Maestro, alt_pool, PostgreSQL |
-| 2 | **Write the options down and invite people to break them.** A written trade-off beats a meeting full of opinions. | PostgreSQL no-outage test (§2.5), Search compute (§4) |
-| 3 | **Treat another function's constraints as design inputs, not approval gates.** | Legal on the Elasticsearch fork (§3), Trust and Security on IRIS |
+| 2 | **Write the options first, then invite experts to break them.** A written trade-off beats a meeting full of opinions. | PostgreSQL no-outage test (§2.5), Search compute (§4) |
+| 3 | **Constraints are design inputs, not approval gates.** Bring the other function in early and design around what they need. | Legal on the Elasticsearch fork (§3), Trust and Security on IRIS |
 | 4 | **Decision-driven communication for leaders, detail-driven for engineers.** | PostgreSQL VP feedback (§2.6) |
-| 5 | **Agree the decision rules before the high-pressure moment.** | Core-SLA rollback rule; ranking criteria for priorities |
-| 6 | **Separate ownership layers with evidence, then help the other team fix their layer.** | Telemetry loss, VENT lag (§7) |
-| 7 | **Make agreements durable:** recurring syncs, written decisions, named reviewers. | Search compute sync (§4), PostgreSQL reviewer list |
+| 5 | **Agree the rules before the pressure, not during it.** Decide the rollback and priority rules while everyone is calm. | Core-SLA rollback rule; ranking criteria for priorities |
+| 6 | **Prove the layer with data, then help the owner fix it.** | Telemetry loss, VENT lag (§7) |
+| 7 | **Agree once, then keep it alive.** Recurring syncs, written decisions, named reviewers. | Search compute sync (§4), PostgreSQL reviewer list |
+| 8 | **Shrink the need first, then add capacity.** Look for the gap between what one team plans to build and what another plans to ship. | Search compute: indexing only the dogfood tenants cut 40 new nodes to 10 (§4) |
+
+### Handling conflict
+
+| # | Principle | Where it shows up |
+|---|---|---|
+| 9 | **Separate the goal from the ask, then solve for the goal.** | Executive's no-outage test: the real goal was more test time (§2.5); Embeddings: node pools plus a kill switch (§8) |
+| 10 | **Bring data to the first conversation, not the third.** | Rankie: I argued principles when the decision was about numbers (§5) |
+| 11 | **Disagree openly, then commit fully.** | Rankie: made my case, lost, and committed (§5) |
+| 12 | **Change your mind fast when the facts change.** | Accepting the principal engineers' critique of my Cell 0 option (§2.5) |
+| 13 | **Escalate with options, not complaints.** | Search compute: the trade-off plus the dogfood and DR options (§4) |
+
+### Motivating engineers
+
+| # | Principle | Where it shows up |
+|---|---|---|
+| 14 | **Give ownership, not tasks.** | Amruta owned the whole certification workstream, not just the tracker (§2.3) |
+| 15 | **Connect the work to why it matters.** | "This upgrade is the gate to Teams and Copilot," not "patch CVEs" (§2.1) |
+| 16 | **Make wins visible, and credit them by name.** | Amruta growing into cross-team coordination (§2.3) |
+| 17 | **Stretch, then stand behind them.** | Coaching a teammate on routing and API design for EUDB |
+| 18 | **Remove the blocker, don't just report it.** | Building the outage-banner template myself when the front-end team was busy (§2.3) |
+
+### Making decisions under pressure
+
+| # | Principle | Where it shows up |
+|---|---|---|
+| 19 | **Look for the reversible middle option.** "Go or abort" is usually a false choice. | Azure Saturday: continue on the minimum node set (§2.3) |
+| 20 | **Know your one-way doors.** Slow down on what you can't undo, and move fast on the rest. | `pg_upgrade --link` and the cutover (Tech retro §10) |
+| 21 | **Decide with 70% of the facts, and say what would change your mind.** | The Postgres upgrade under the CVE deadline |
+
+### Owning mistakes
+
+| # | Principle | Where it shows up |
+|---|---|---|
+| 22 | **Own it first, explain it second.** | Reverting my own Kafka offset change (§6) |
+| 23 | **Turn every lesson into a mechanism.** A lesson that stays a feeling will happen again. | Ubuntu sequences → checklists, gates and alerts (§2.6) |
+
+### Growing people and teams
+
+| # | Principle | Where it shows up |
+|---|---|---|
+| 24 | **Coach the person, don't take over the work.** | alt_pool: coached the staff engineer instead of doing it for him (§8) |
+| 25 | **Work yourself out of the critical path.** | RouteKey went from one expert to several; the Infrastructure team owns my tools today |
+| 26 | **Feedback early, specific and private.** | The engineer who kept missing commitments: I acted early (work stories, Q3) |
 
 ---
 
@@ -81,6 +127,8 @@ We upgraded every cluster without production issues on the PostgreSQL upgrade. T
 - **Capacity secured ahead of time.** Keeping the old nodes as a rollback path meant running old and new nodes side by side, so each window needed far more compute than normal. I worked with the Azure compute capacity team to get that extra compute ahead of each window and release it once we no longer needed a rollback. **[confirm: how much extra (cores or VMs), how far ahead you asked, how you sized it, and when the old nodes were released.]**
 - **Reversible calls under pressure.** When Azure VM provisioning failed on the production Saturday and several tech leads wanted to abort, I proposed a middle path: continue on the minimum nodes during low weekend traffic, and add full capacity once Azure was stable.
 
+**Principles:** Give ownership, not tasks. Remove the blocker, don't just report it. Look for the reversible middle option.
+
 ### 2.4 How I kept everyone informed and aligned
 
 | Audience | Channel | Cadence | What they got |
@@ -103,6 +151,7 @@ We upgraded every cluster without production issues on the PostgreSQL upgrade. T
 - **How I handled it:** I didn't defend the option. I took it to an RFC review with infra and service principal engineers, agreed with the critique, and posted the conclusion: no safe dry run exists without a write outage, so we'd upgrade under a write outage and validate in-window with MSIT as the canary, with a rollback rule. When the sponsor asked who had reviewed it, I named the infra and service reviewers. I also asked every service team for an estimated certification time, so leadership could size the window.
 - **Outcome:** the decision held. A later dry run in Cell 0 was ruled out again because real customer traffic ran through that cell.
 - **What I learned:** **pre-wire risky options with the domain experts before putting them in front of an executive.** I put a routing option in a 173-person post before checking cell affinity and the single-primary constraint with the people who knew those constraints best. Now I run that check privately first.
+- **Principles:** Separate the goal from the ask, then solve for the goal. Change your mind fast when the facts change.
 
 ### 2.6 What could have gone better (volunteer at least two)
 
@@ -116,7 +165,7 @@ We upgraded every cluster without production issues on the PostgreSQL upgrade. T
 | **Rollback testing took longer than expected** | Plan rollback rehearsal as its own milestone | A dedicated rollback milestone, with a working STAGE environment |
 | **Ubuntu upgrade: missed early signals.** A sequence problem appeared after the OS cutover. My manager said my reflection was too high-level. | Turn lessons into mechanisms | Pre-flight checklists, stage gates with pass/fail criteria, early-signal alerts **[confirm the customer impact]** |
 
-The manager feedback in the last row is a strong self-awareness point. You can say: *"My manager told me my reflection was too high-level and didn't turn into repeatable changes. He was right, so now I write lessons as mechanisms: checklists, gates and alerts."*
+The manager feedback in the last row is a strong self-awareness point. You can say: *"My manager told me my reflection was too high-level and didn't turn into repeatable changes. He was right, so now I write lessons as mechanisms: checklists, gates and alerts."* That's the principle **"Turn every lesson into a mechanism."**
 
 ### 2.7 Likely follow-ups
 
@@ -147,6 +196,7 @@ The manager feedback in the last row is a strong self-awareness point. You can s
 - **Outcome:** native TLS on the fork, AKS with Helm and declarative CI/CD, provisioning and patching from days to under 15 minutes, and more than $10M a year saved. The search team owns the platform today.
 - **Could have gone better:** I'd bring legal in **even earlier, with a written risk plan**. Engaging late risks late-stage delays.
 - **Lesson:** a non-engineering partner's constraints belong in the design, not at the end of it.
+- **Principle:** Constraints are design inputs, not approval gates.
 
 ---
 
@@ -154,16 +204,17 @@ The manager feedback in the last row is a strong self-awareness point. You can s
 
 **Use when asked:** conflicting agendas, a difficult partner, an escalation.
 
-- **Situation:** the search team's tech lead asked me to substantially scale Elasticsearch nodes (more GPU and memory) for production-scale experiments with new search models. Azure had a capacity crunch, the extra compute was raising COGS, and the Copilot integration rollout depended on the work.
+- **Situation:** our Elasticsearch cluster had **100 nodes**. The search team's tech lead asked for **40 more nodes on a higher GPU SKU** to roll out new search models. Azure had a capacity crunch, the extra compute was raising COGS, and the Copilot integration rollout depended on the work.
 - **Agendas:** the search team wanted speed for experiments and the Copilot timeline. I was responsible for scarce capacity and COGS. Both were legitimate.
 - **What I did:** I proposed three options that needed less compute, instead of just adding more.
   1. **Pushed back with a way to cut load.** I proposed lowering the search model's query fan-out, so each search sends fewer requests to the servers. I also asked him to benchmark in pre-prod before rolling out to prod.
   2. **Took his constraints seriously.** They had no production-scale pre-prod environment, and optimizing the models wasn't feasible in the short term. We didn't resolve it, and he escalated to leadership. With the COGS impact, it reached the VP level.
-  3. **Gave leadership the trade-off and a smaller rollout:** scarce capacity, rising COGS, the Copilot timeline. I proposed indexing data only for the users eligible for the A/B experiments, instead of the whole user base, so the feature could roll out to them without more compute. We agreed to roll out to those users until the models needed less compute.
+  3. **Spotted the gap between two plans.** The search team planned to index **all tenants** for the new model. But the product team was only rolling the feature out to the few tenants in the A/B test (dogfooding). So I asked: why index everyone when only the dogfood tenants will use it? Indexing only those tenants cut the ask from **40 nodes to 10**. That covered the rollout while the search team improved the model, and gave us time to get more compute from Azure.
   4. **Created headroom:** I proposed moving non-SLA traffic to the DR region. The tech lead agreed, it freed about 30% of capacity, and I carried it out.
-- **Outcome:** experiments rolled out to the A/B users within the freed capacity. What lasted was a **regular sync** between the search team and me on model-efficiency progress, which turned a dispute into a shared commitment.
+- **Outcome:** **10 new nodes instead of 40**, and the feature rolled out to the dogfood tenants. What lasted was a **regular sync** between the search team and me on model-efficiency progress, which turned a dispute into a shared commitment.
 - **Could have gone better:** my pre-prod benchmarking ask **wasn't feasible**, because the environment didn't exist. I should have checked that before pushing it, and raised the capacity option sooner, before it went to the VP.
-- **Lesson:** when two legitimate priorities collide, options that shrink the need or create headroom (fewer users to index, non-SLA traffic moved to DR) give everyone something to agree on, and a recurring sync keeps the agreement from fading.
+- **Lesson:** when two legitimate priorities collide, look for the gap between what one team plans to build and what another team plans to ship. Indexing only the dogfood tenants cut the ask by three quarters. Options that shrink the need or create headroom give everyone something to agree on, and a recurring sync keeps the agreement from fading.
+- **Principles:** Shrink the need first, then add capacity. Escalate with options, not complaints.
 - **Likely probe:** "Didn't moving traffic to the DR region weaken disaster recovery?" **[confirm: how much DR headroom stayed free, whether non-SLA traffic would be shed during a real failover, and who signed off.]**
 
 ---
@@ -177,6 +228,7 @@ The manager feedback in the last row is a strong self-awareness point. You can s
 - **What I did:** over several conversations I made the different assumptions explicit (availability versus quality), and I **brought in the product team** so the decision rested on customer impact, not engineering preference.
 - **Outcome:** my design **wasn't adopted**. Rankie failures were infrequent and a backup feed was costly, so it went to the backlog. I disagreed, made my case, then committed fully, and I think the call was reasonable.
 - **What I'd change:** bring **failure frequency, customer impact and cost data to the first conversation**, not the third. I lost time arguing principles when the decision was really about numbers.
+- **Principles:** Bring data to the first conversation, not the third. Disagree openly, then commit fully.
 
 ---
 
@@ -188,6 +240,7 @@ The manager feedback in the last row is a strong self-awareness point. You can s
 - **What I did:** reverted my pull request right away, and owned it as my mistake: the change was right in isolation and wrong in the system. **[confirm: how you communicated with the affected teams, whether you held a post-incident review, and whether you apologized directly.]**
 - **What changed:** for any change that affects partner systems, I now validate downstream assumptions, test end to end, and define rollout and rollback criteria **before** shipping. I built the same discipline into IRIS (a two-stage verification pipeline and permission boundaries), so AI-suggested changes earn trust instead of spending it.
 - **Lesson:** trust with partner teams is spent quickly by surprising them. The approver, which was me, is accountable for the downstream impact.
+- **Principles:** Own it first, explain it second. Turn every lesson into a mechanism.
 
 ---
 
@@ -204,7 +257,7 @@ The manager feedback in the last row is a strong self-awareness point. You can s
 ### 7.2 VENT lag (from Connect)
 - I resolved ambiguity about VENT lag by building alignment that the root cause was **service-side event consumption, not infrastructure**, and I proactively educated partner teams so the fix landed at the right layer. My manager called out my *"ability to separate infrastructure vs. service ownership concerns and influence partner teams."* **[confirm the specifics before using this as a full story.]**
 
-**Lesson for both:** a boundary dispute goes well when you bring evidence, explain your own layer's design honestly, and help the other team with theirs. It goes badly when it sounds defensive.
+**Lesson for both:** a boundary dispute goes well when you bring evidence, explain your own layer's design honestly, and help the other team with theirs. It goes badly when it sounds defensive. **Principle:** Prove the layer with data, then help the owner fix it.
 
 ---
 
@@ -251,6 +304,10 @@ Be ready to say any of these without being asked:
 | Communicating with executives | §2.6 VP feedback | §2.4 |
 | When another team says no | §5 Rankie | §8 Secret Scanner false positives |
 | When do you escalate? | §4: escalate with a trade-off and a headroom option, not a complaint | §2.5 |
+| How do you handle conflict? | Principles 9–13 (§1), then §4 Search compute | §5 Rankie |
+| How do you motivate engineers? | Principles 14–18 (§1), then §2.3 Amruta | §8 alt_pool |
+| A hard call under pressure | §2.3 Azure Saturday: the reversible middle option | §2.5 executive ask |
+| Pushing back on a resource or cost request | §4: 40 nodes cut to 10 by indexing only the dogfood tenants | §2.3 Azure capacity for rollback |
 | How has your approach to collaboration changed? | §9 self-awareness bank | §1 operating model |
 
 **My escalation rule:** escalate when two legitimate priorities collide and the people involved can't trade them off, never as a first move. Bring the trade-off, the options and a recommendation. After the decision, set up a recurring check-in so it holds.

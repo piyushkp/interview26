@@ -407,7 +407,7 @@ I learned that a strong benchmark alone doesn't justify a security-sensitive pro
 
 **Context**
 
-The search team asked me to scale the Elasticsearch nodes substantially, with more GPU and memory, because they were running many experiments with the latest search models at production scale. Azure had a capacity crunch, so I had to allocate compute wisely. At the same time, the Copilot integration rollout depended on that search work, and the added compute was increasing the COGS budget.
+Our Elasticsearch cluster had 100 nodes, and the search team asked me for 40 more nodes on a higher GPU SKU, because they were rolling out the latest search models at production scale. Azure had a capacity crunch, so I had to allocate compute wisely. At the same time, the Copilot integration rollout depended on that search work, and the added compute was increasing the COGS budget.
 
 **Actions**
 
@@ -415,18 +415,18 @@ I disagreed with simply provisioning more, and I drove the resolution in four st
 
 1. **I pushed back and proposed cutting the load.** I asked the search team's tech lead to lower the search model's query fan-out, so each search sends fewer requests to the servers and needs less compute. I also asked him to run his experiments in pre-prod to get benchmarks before rolling out to prod.
 2. **I took his constraints seriously.** He replied that they had no pre-prod environment at production scale and that optimizing the models wasn't feasible in the short term. That was a legitimate limit, so I stopped pressing for it, but I also couldn't approve open-ended compute. We didn't resolve it, and he raised it to the leadership team because the Copilot integration rollout was getting delayed. With the COGS increase, it reached the VP level.
-3. **I engaged the leadership team with the trade-off and a smaller rollout.** I presented the competing constraints directly: scarce Azure capacity, rising COGS and the Copilot timeline. I proposed indexing data only for the users eligible for the A/B experiments, instead of the whole user base, so the feature could roll out to those users without more compute. We agreed to roll out to them until the models improved enough to need less compute.
+3. **I engaged the leadership team with the trade-off, and the gap I'd spotted.** I presented the competing constraints directly: scarce Azure capacity, rising COGS and the Copilot timeline. Then I pointed out a gap between two plans. The search team planned to index all tenants for the new model, but the product team was only rolling the feature out to the few tenants in the A/B test (dogfooding). So I proposed indexing only the dogfood tenants. That cut the ask from 40 nodes to 10, enough until the search team improved the model, and it gave us time to get more compute from Azure. Leadership and the tech lead agreed.
 4. **I raised the option that created headroom.** I proposed moving non-SLA traffic to the DR region to free up compute in the meantime. The tech lead agreed, and I carried it forward.
 
 **Results**
 
-Moving non-SLA traffic to the DR region freed up about 30% of capacity, and indexing only the A/B users' data let the experiments roll out within it. My pre-prod benchmarking request wasn't adopted, because a production-scale pre-prod environment didn't exist.
+We added 10 nodes instead of 40, and the feature rolled out to the dogfood tenants. Moving non-SLA traffic to the DR region freed up about 30% more capacity. My pre-prod benchmarking request wasn't adopted, because a production-scale pre-prod environment didn't exist.
 
 The change that lasted was a regular sync between the search team and me on progress improving search model efficiency. It turned a disagreement over compute into a shared, recurring commitment to make the models need less, and it kept that commitment visible instead of letting it depend on a one-off escalation.
 
 **Learnings**
 
-I learned that when two legitimate priorities collide, options that shrink the need or create headroom, like indexing only the A/B users or moving non-SLA traffic to the DR region, give leaders and the other team something to agree on, and that a recurring sync keeps an agreement from fading. I also learned to check that my ask is feasible, since a prod-scale pre-prod environment didn't exist.
+I learned that when two legitimate priorities collide, it pays to look for the gap between what one team plans to build and what another plans to ship. Indexing only the dogfood tenants cut the ask from 40 nodes to 10. Options that shrink the need or create headroom give leaders and the other team something to agree on, and that a recurring sync keeps an agreement from fading. I also learned to check that my ask is feasible, since a prod-scale pre-prod environment didn't exist.
 
 | Impact | Scope | Personal Contribution | Tech Complexity | Organizational Complexity |
 |---|---|---|---|---|
@@ -717,11 +717,11 @@ What I learned is to fix clarity and feedback first, and if that doesn't work, t
 
 I have three conflict examples: one with the search team's tech lead on compute capacity, one with my manager on embeddings, and one with a service team on Homefeed and Rankie. I'll start with the search compute one.
 
-The search team asked me to scale the Elasticsearch nodes substantially, with more GPU and memory, because they were running many experiments with the latest search models at production scale. Azure had a capacity crunch, so I had to allocate compute wisely. Meanwhile the Copilot integration rollout depended on that work, and the extra compute was increasing the COGS budget.
+Our Elasticsearch cluster had 100 nodes, and the search team asked me for 40 more nodes on a higher GPU SKU, because they were rolling out the latest search models at production scale. Azure had a capacity crunch, so I had to allocate compute wisely. Meanwhile the Copilot integration rollout depended on that work, and the extra compute was increasing the COGS budget.
 
-I disagreed with simply provisioning more, and I drove the resolution in four steps. First, I pushed back directly with the search team's tech lead: I proposed lowering the search model's query fan-out, so each search sends fewer requests to the servers, and asked him to run his experiments in pre-prod to get benchmarks before rolling out to prod. Second, I took his answer seriously: they had no pre-prod environment at production scale, and optimizing the models wasn't feasible in the short term. We didn't resolve it, and he raised it to the leadership team because the Copilot rollout was getting delayed. With the COGS increase, it reached the VP level. Third, I engaged the leadership team with the trade-off directly: scarce Azure capacity, rising COGS and the Copilot timeline. I proposed indexing data only for the users eligible for the A/B experiments, instead of the whole user base, so the feature could roll out to them without more compute, and we agreed to that until the models improved enough to need less compute. Fourth, I raised the option that created headroom: moving non-SLA traffic to the DR region. The tech lead agreed, and I carried it forward.
+I disagreed with simply provisioning more, and I drove the resolution in four steps. First, I pushed back directly with the search team's tech lead: I proposed lowering the search model's query fan-out, so each search sends fewer requests to the servers, and asked him to run his experiments in pre-prod to get benchmarks before rolling out to prod. Second, I took his answer seriously: they had no pre-prod environment at production scale, and optimizing the models wasn't feasible in the short term. We didn't resolve it, and he raised it to the leadership team because the Copilot rollout was getting delayed. With the COGS increase, it reached the VP level. Third, I engaged the leadership team with the trade-off directly: scarce Azure capacity, rising COGS and the Copilot timeline. I also pointed out a gap: the search team planned to index all tenants for the new model, but the product team was only rolling it out to the few tenants in the A/B test (dogfooding). So I proposed indexing only the dogfood tenants, which cut the ask from 40 nodes to 10 until the model improved, and gave us time to get more compute from Azure. Leadership and the tech lead agreed. Fourth, I raised the option that created headroom: moving non-SLA traffic to the DR region. The tech lead agreed, and I carried it forward.
 
-The move freed up about 30% of capacity, and indexing only the A/B users' data let the experiments roll out within it. My pre-prod benchmarking request wasn't adopted, since a production-scale pre-prod environment didn't exist, and I accepted that. What lasted was a regular sync between the search team and me on progress improving search model efficiency, which turned a compute dispute into a shared, recurring commitment.
+We added 10 nodes instead of 40, the feature rolled out to the dogfood tenants, and the DR move freed up about 30% more capacity. My pre-prod benchmarking request wasn't adopted, since a production-scale pre-prod environment didn't exist, and I accepted that. What lasted was a regular sync between the search team and me on progress improving search model efficiency, which turned a compute dispute into a shared, recurring commitment.
 
 What I learned is that when two legitimate priorities collide, an option that creates headroom gives leaders and the other team something to agree on, and a recurring sync keeps the agreement from fading. I also learned to check that my ask is feasible.
 
@@ -733,12 +733,12 @@ What I learned is that when two legitimate priorities collide, an option that cr
 **Follow-up 2**
 
 > Q: What was his concern, and how did you treat it?
-> A: He had no prod-scale pre-prod environment and thought optimizing the models wasn't feasible, while the Copilot integration rollout was being delayed. I treated those as legitimate, which is why I stopped pressing for pre-prod benchmarks and raised options that needed less compute or created capacity instead: indexing only the A/B users, and moving non-SLA traffic to the DR region.
+> A: He had no prod-scale pre-prod environment and thought optimizing the models wasn't feasible, while the Copilot integration rollout was being delayed. I treated those as legitimate, which is why I stopped pressing for pre-prod benchmarks and raised options that needed less compute or created capacity instead: indexing only the dogfood tenants, and moving non-SLA traffic to the DR region.
 
 **Follow-up 3**
 
 > Q: How did you reach the resolution, and who proposed what?
-> A: It reached the VP level because of the Copilot delay and COGS. I engaged the leadership team with the trade-off and proposed indexing data only for the users eligible for the A/B experiments, so the feature could roll out to them without more compute. We agreed to that until the models need less compute. I also proposed moving non-SLA traffic to the DR region, the tech lead agreed, and it freed up about 30% of capacity.
+> A: It reached the VP level because of the Copilot delay and COGS. I engaged the leadership team with the trade-off and pointed out the gap: the search team planned to index all tenants, but the product team was only rolling the feature out to the dogfood tenants in the A/B test. I proposed indexing only those tenants, which cut the ask from 40 nodes to 10 until the model improved, and bought time to get more compute from Azure. We agreed. I also proposed moving non-SLA traffic to the DR region, the tech lead agreed, and it freed up about 30% of capacity.
 
 **Follow-up 4**
 

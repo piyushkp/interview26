@@ -1,6 +1,6 @@
 # Technical Retrospective: PostgreSQL 9.6 → 18.6 and Ubuntu 18.04 → 25.04 Upgrade
 
-> **Format:** 45-minute interactive discussion with a Senior Engineer **[confirm the presenting vs. discussion split before making any deck, §0]**. Treat it like onboarding a new teammate onto the project: whiteboard, code and trade-offs, not slides.
+> **Format (from Meta's guide):** 45-minute interactive discussion with a Senior Engineer, assessing how you communicate technically, as if onboarding a new teammate. **No slide deck** (Meta discourages one). Use the live whiteboard for diagrams, and code snippets where they help. The project should be from the last 2–3 years and show your scope; this one fits (production in 2025).
 > **Goal:** show the project at every level, from why it existed down to `pg_upgrade` flags, replication slots and cutover steps, and defend each decision when asked "what if you'd done it differently?"
 >
 > **Evidence rule:** everything here comes from your story bank, Connect notes and your answers. Items marked **[confirm]** are gaps or my inferences. Verify them before the interview, and don't present them as fact until you have. PostgreSQL and Ubuntu behavior described as background (collation, logical replication limits, version changes) is public, documented behavior.
@@ -9,15 +9,25 @@
 
 ## 0. Run Plan (45 minutes)
 
-**Confirm the format first [confirm with the recruiter]:** how much of the session is you presenting and how much is discussion, whiteboard or deck, and who's in the room. Don't build a deck until you know.
-- **All discussion (the plan below assumes this):** whiteboard only, and let the interviewer steer.
-- **Short presentation, then discussion:** present for 10–15 minutes (§1.1 why, the §3 diagram, the §4 two-phase design, the §9.1 headline), then hand over. If they want slides, keep it to about 5: why it mattered, architecture (the §3 PNG), the two-phase design, roadblocks, results.
+**What Meta scores, and where it lives in this doc:**
+
+| They look for | Where | How to show it |
+|---|---|---|
+| Setting context: why the project existed | §1, §1.1 | One sentence on the business reason: the gate to Teams and Copilot |
+| High-level requirements | §2 | A short list on the whiteboard |
+| **Architecture and trade-offs, in depth (the key part)** | §3–§6, §4.3 | No hand-waving: be able to go one level down on every arrow (§3.2) |
+| Depth under probing, e.g. "what protocols did you use, and how do they work?" | §3.2, §11 Q5 | Name the protocol, how it works, and what happens when it fails |
+| Roadblocks and how you got past them | §8 | What happened → technical root → what I did → what I'd change |
+| Judgment on "what if you'd done it differently?" | §4.1, §11 | Name the alternative, its cost, and why it lost at our constraints |
+| Your skills and contribution to the vision | §1.2, §4.3 "Whose call", §10.2 | Say "I" for what you owned, and name who did the rest |
+
+**No deck.** Draw as you talk, and show code where it makes a point: the `pg_upgrade` invocation (§5.1), the publication and subscription setup (§6.1), and the sequence sync (§8.5).
 
 | Time | Segment | What's on the whiteboard |
 |---|---|---|
 | 0–4 min | Context, **why it was critical**, why now (§1, §1.1) | Nothing yet. Say it in plain words. End on "this was the gate to the Teams and Copilot integrations." |
 | 4–6 min | Requirements and constraints (§2) | A short list: downtime budget, no data loss, rollback, ~40 clusters, 15 teams |
-| 6–12 min | Starting architecture and failover (§3, §3.1) | **Diagram 1:** one cluster: Bouncie → HAProxy → pgbouncer → PostgreSQL, primary → standby → cascading replicas (up to 50), ZooKeeper control plane |
+| 6–12 min | Starting architecture, failover and protocols (§3, §3.1, §3.2) | **Diagram 1:** one cluster: Bouncie → HAProxy → pgbouncer → PostgreSQL, primary → standby → cascading replicas (up to 50), ZooKeeper control plane |
 | 12–25 min | The core design: two phases and why (§4–§6) | **Diagram 2:** Phase 1 `pg_upgrade` on the same OS, Phase 2 logical replication to a new OS |
 | 25–33 min | Roadblocks (§8). **Lead with §8.9**, the executive ask for a no-outage test: it's your strongest leadership story | **Diagram 3:** the cutover sequence, and where sequences broke |
 | 33–38 min | Results, impact and lessons (§9–§10) | The chain: upgrade → CVEs cleared → Teams and Copilot integrations → **+30% DAU**; plus the metrics |
@@ -226,6 +236,23 @@ Why it's designed this way (good probe answers):
 - **Cascading pays off here too.** Replicas hang off the standby, so after a failover the tree stays intact.
 
 **Link to the upgrade [confirm]:** during the `pg_upgrade` window the primary is down on purpose. If `/autofailover` were still on, Scrapie would ban it and the 9.6 standby would promote itself, which is a split brain across versions. So autofailover has to be switched off for the window, and the replication tree in ZooKeeper has to be rebuilt for the new-version nodes.
+
+### 3.2 How the pieces talk: one level down on every arrow
+
+Meta says interviewers will ask "what protocols did you use, and how did they work?" Here's each hop in the diagram, how it works, and what happens when it fails. The protocol behavior is public, documented PostgreSQL, ZooKeeper, HAProxy and pgbouncer behavior. How *we* configured each one is marked **[confirm]**.
+
+| Hop | Protocol | How it works | When it fails |
+|---|---|---|---|
+| Service → Bouncie → node :9232 | PostgreSQL wire protocol over TCP | Bouncie reads ZooKeeper to pick the node (the primary for writes), then opens a normal Postgres connection to `node_ip:9232`. **[confirm: is Bouncie a client library or a proxy, and does it route reads to replicas?]** | If ZooKeeper data is stale, the client hits the wrong node, so it re-reads ZooKeeper on failure |
+| HAProxy :9232 → pgbouncer :9233+ | TCP, layer 4 | HAProxy doesn't parse SQL. It just spreads connections across the pgbouncer processes. **[confirm: `mode tcp`, balance algorithm, health checks]** | A dead pgbouncer fails its health check and is taken out of rotation |
+| pgbouncer → PostgreSQL :5432 | PostgreSQL wire protocol; SCRAM-SHA-256 auth on new versions | pgbouncer keeps a small pool of server connections and shares them across many clients. **It's single-threaded**, one core per process, which is why each node runs ×4, or ×8 on machines with more than 20 CPUs. **[confirm pooling mode: in *transaction* mode, session state such as `SET` and server-side prepared statements doesn't survive between transactions]** | Pool exhaustion shows up as client wait time, not errors, so watch `cl_waiting` |
+| Primary → standby → tier 1 → tier 2 | **Streaming replication protocol** (libpq replication connection) | The downstream `walreceiver` connects using `primary_conninfo` and sends `START_REPLICATION` from its last LSN (a position in the WAL). The upstream `walsender` streams WAL records, and the receiver sends back its write, flush and replay positions. That feedback is where replication-lag numbers come from. **[confirm: async or sync, `hot_standby_feedback`, physical replication slots]** | If the upstream dies, the receiver reconnects. If it fell too far behind and the WAL is gone, it needs the archive or a rebuild |
+| postie → ZooKeeper | ZooKeeper client session with heartbeats; writes go through ZAB consensus to a quorum | postie writes an **ephemeral** znode. ZooKeeper deletes it automatically when the session expires, so a dead node disappears on its own after the session timeout. **[confirm session timeout]** | A network blip longer than the timeout looks like a dead node. That's why Scrapie bans, and doesn't instantly promote |
+| ZooKeeper → upstream_watcher, Bouncie | ZooKeeper **watches** | A watch is a one-shot notification: after it fires, the client must re-read the data and set a new watch. Changes between firing and re-registering are caught by that re-read. | A slow watcher acts late. The 360-second ban timeout bounds how late a promotion can be |
+| Analytics replica → Azure Blob | `archive_command`, file upload | Each finished 16 MB WAL segment is uploaded. That allows point-in-time recovery and seeding new replicas. **[confirm the tool, e.g. WAL-G or a custom script]** | If archiving fails, WAL piles up on disk, so alert on archive lag |
+| Old cluster → new cluster (Phase 2) | Logical replication: publication and subscription, `pgoutput`, a logical replication slot | Covered in §6.1: row changes, not disk blocks, so it works across OS and glibc versions | The slot holds WAL until the subscriber confirms it, so a stuck subscriber fills the publisher's disk (§11 Q8) |
+
+**Numbers to have ready [confirm]:** ZooKeeper session timeout, typical replica lag in seconds or bytes, pgbouncer `default_pool_size` and Postgres `max_connections`, and the WAL generated per hour on the busiest cluster.
 
 ---
 
@@ -647,7 +674,7 @@ It was a write outage, not a full outage. Writes stopped and the banner told use
 2. **Diagram 2 (§4):** the 9.6/18.04 → 18.6/18.04 → 18.6/25.04 arrow chain, labeled with *why that order*.
 3. **Diagram 3 (§6.3):** the cutover sequence. Circle the sequence-sync step and tell the §8.5 story there.
 
-Keep a **legend** on the whiteboard: **solid** arrows for synchronous client traffic, **dashed** for replication.
+Keep a **legend** on the whiteboard: **solid** arrows for synchronous client traffic, **dashed** for replication. Be ready to go one level down on any arrow: the protocol, how it works, and what happens when it fails (§3.2).
 
 ---
 
@@ -680,5 +707,5 @@ Keep a **legend** on the whiteboard: **solid** arrows for synchronous client tra
 | 23 | Read path during the write outage, and the final rule for MSIT writes before a rollback | §5.4, §11 Q20 |
 | 24 | Rollbacks count; time saved by the parallel pipeline; what's been reused since | §9.2, §10.1 |
 | 25 | Whether the N-1 version policy is really your proposal | §10.2 |
-| 26 | **Session format:** time presenting vs. discussion, whiteboard or deck, who's in the room | §0 |
+| 26 | **Protocol and config details:** Bouncie (library or proxy), HAProxy mode and health checks, pgbouncer pooling mode and pool sizes, ZooKeeper session timeout, async vs. sync replication, `hot_standby_feedback`, replication slots, the WAL archive tool | §3.2 |
 | 27 | **Cost:** extra Azure capacity during Phase 2, engineer-months, and any refund or SLA exposure you avoided | Fact Sheet |
