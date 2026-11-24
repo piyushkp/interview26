@@ -67,7 +67,7 @@ Have these ready to name, because every story below shows one or more of them. D
 | # | Principle | Where it shows up |
 |---|---|---|
 | 19 | **Look for the reversible middle option.** "Go or abort" is usually a false choice. | Azure Saturday: continue on the minimum node set (§2.3) |
-| 20 | **Know your one-way doors.** Slow down on what you can't undo, and move fast on the rest. | `pg_upgrade --link` and the cutover (Tech retro §10) |
+| 20 | **Know your one-way doors.** Slow down on what you can't undo, and move fast on the rest. | `pg_upgrade --link` and the cutover (Tech retro §11) |
 | 21 | **Decide with 70% of the facts, and say what would change your mind.** | The Postgres upgrade under the CVE deadline |
 
 ### Owning mistakes
@@ -163,7 +163,7 @@ We upgraded every cluster without production issues on the PostgreSQL upgrade. T
 | A **last-minute Azure core shortage** | Track capacity with Azure proactively | Quota and capacity are a pre-flight checklist item |
 | I posted the Cell 0 routing option **before pre-wiring it with experts** | Check the constraints privately first | Pre-wire risky options (§2.5) |
 | **Rollback testing took longer than expected** | Plan rollback rehearsal as its own milestone | A dedicated rollback milestone, with a working STAGE environment |
-| **Ubuntu upgrade: missed early signals.** A sequence problem appeared after the OS cutover. My manager said my reflection was too high-level. | Turn lessons into mechanisms | Pre-flight checklists, stage gates with pass/fail criteria, early-signal alerts **[confirm the customer impact]** |
+| **Ubuntu upgrade: missed early signals.** Our sequence-sync script used `MAX(id)` for legacy IDs that are stored shifted left 13 bits, so new IDs came out 8,192× too large. Two days later the busiest table overflowed into negative IDs and broke GIF and link previews in messages. About 50K rows were impacted; I reverted the counters and fixed the rows by hand. My manager said my reflection was too high-level. | Turn lessons into mechanisms | Pre-flight checklists, stage gates with pass/fail criteria, early-signal alerts (negative IDs, ID jumps) |
 
 The manager feedback in the last row is a strong self-awareness point. You can say: *"My manager told me my reflection was too high-level and didn't turn into repeatable changes. He was right, so now I write lessons as mechanisms: checklists, gates and alerts."* That's the principle **"Turn every lesson into a mechanism."**
 
@@ -327,10 +327,10 @@ Be ready to say any of these without being asked:
 | # | Item | Where |
 |---|---|---|
 | 1 | Any recurring cross-team sync during the PostgreSQL project, and the live channel used during windows | §2.4 |
-| 2 | Ubuntu sequence problem: customer impact | §2.6 |
+| 2 | Ubuntu sequence problem: how long GIF and link previews were broken before the fix | §2.6 |
 | 3 | Kafka offsets: how you communicated with affected teams, whether there was a postmortem or a direct apology | §6 |
 | 4 | Telemetry: how the service team responded, and what mechanism they adopted | §7.1 |
 | 5 | VENT lag: specifics (teams, evidence, outcome) | §7.2 |
 | 6 | Secret Scanner: what made the Trust and compliance clearance difficult | §8 |
-| 7 | PostgreSQL target version: say it consistently (the May 2025 thread says 16; other docs say 18.6) | §2.1 |
+| 7 | Versions are settled: PostgreSQL 16 on Ubuntu 20.04. Say it the same way everywhere | §2.1 |
 | 8 | Azure capacity: how much extra compute, how far ahead you asked, how you worked with the capacity team, and when old nodes were released | §2.2, §2.3, §2.7 |

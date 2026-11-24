@@ -29,7 +29,7 @@ I owned the PostgreSQL and Ubuntu upgrade across about 40 production clusters, a
 
 **Actions**
 
-I designed a two-phase migration to keep downtime small, and I worked on four fronts. For the database, I used pg_upgrade to move PostgreSQL from 9.6 to 18.6. To protect the services that depend on it, I introduced feature flags so the Java and infrastructure services stayed compatible across both versions without deployment locks, and I built dynamic maintenance banners to keep customers informed. For the OS, I ruled out an in-place Ubuntu upgrade because of the Ubuntu 18.04 libc index-invalidation issue. Instead, I used native logical replication to stream changes to a mirrored Ubuntu cluster, which allowed a short cutover. Throughout, I wrote a comprehensive rollback plan and aligned executives and stakeholders across organizations on it, so a VP-level audience had confidence in a plan with broad production impact.
+I designed a two-phase migration to keep downtime small, and I worked on four fronts. For the database, I used pg_upgrade to move PostgreSQL from 9.6 to 16. To protect the services that depend on it, I introduced feature flags so the Java and infrastructure services stayed compatible across both versions without deployment locks, and I built dynamic maintenance banners to keep customers informed. For the OS, I ruled out an in-place Ubuntu upgrade because of the Ubuntu 18.04 libc index-invalidation issue. Instead, I used native logical replication to stream changes to a mirrored Ubuntu 20.04 cluster, which allowed a short cutover. Throughout, I wrote a comprehensive rollback plan and aligned executives and stakeholders across organizations on it, so a VP-level audience had confidence in a plan with broad production impact.
 
 Because the PostgreSQL upgrade averaged about one hour of downtime per cluster, I grouped the clusters into non-SLA and SLA cohorts and scheduled them in separate upgrade windows. I upgraded the non-SLA clusters first, allowed enough bake time to observe stability, and then upgraded the SLA clusters in the later window.
 
@@ -49,7 +49,7 @@ Yammer's legacy tables build their IDs differently. They take the counter and mu
 
 Most tables kept working with oversized IDs, so nobody noticed. `open_graph_objects` handles every link and image preview, so it was already the biggest counter in this group. About two days after the upgrade, it went past the 64-bit limit and started producing negative IDs. The workfeed service rejected them, and GIFs and link previews in messages stopped working.
 
-**Fix:** for these tables, divide the highest ID by 8,192 (shift right 13 bits) before setting the counter.
+**Fix:** I reverted these counters to their previous, correct values, which is the highest ID divided by 8,192 (shifted right 13 bits). Then I fixed the roughly 50,000 impacted rows by hand. None of the bad IDs had reached other systems such as Cosmos DB, so the cleanup stayed inside Postgres.
 
 **Results**
 
@@ -600,7 +600,7 @@ The clusters ran legacy PostgreSQL 9.6 on Ubuntu with critical CVEs open and Mic
 
 The ambiguity was real. There was no proven path for this version jump at this scale, and the 15 service teams didn't know how to certify their service afterward, because their unit and integration tests didn't cover everything and end-to-end tests were risky. I contributed in three ways: the migration design, the rollout, and certification with stakeholder alignment, which was the hardest part.
 
-On the migration design, I used a two-phase approach. I used pg_upgrade to move PostgreSQL from 9.6 to 18.6, with feature flags so the Java and infrastructure services stayed compatible across both versions without deployment locks, and dynamic maintenance banners to keep customers informed. For the OS, I ruled out an in-place Ubuntu upgrade because of the Ubuntu 18.04 libc index-invalidation issue, and used native logical replication to a mirrored Ubuntu cluster for a short cutover.
+On the migration design, I used a two-phase approach. I used pg_upgrade to move PostgreSQL from 9.6 to 16, with feature flags so the Java and infrastructure services stayed compatible across both versions without deployment locks, and dynamic maintenance banners to keep customers informed. For the OS, I ruled out an in-place Ubuntu upgrade because of the Ubuntu 18.04 libc index-invalidation issue, and used native logical replication to a mirrored Ubuntu 20.04 cluster for a short cutover.
 
 On the rollout, because the PostgreSQL upgrade averaged about one hour of downtime per cluster, I grouped the clusters into non-SLA and SLA cohorts in separate windows. I upgraded the non-SLA clusters first with enough bake time, then the SLA clusters.
 
