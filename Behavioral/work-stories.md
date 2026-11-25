@@ -20,6 +20,7 @@ Index:
 12. FaultLine: Autonomous SRE Sidecar
 13. Search Compute Capacity Conflict
 14. Telemetry Loss in Outlook Email Events: Logs Are Not a Reliable Dependency
+15. AI Index Recommendations: Right for the Query, Wrong for the Workload
 
 ### 1. Postgres & OS Zero-Downtime Upgrade
 
@@ -461,6 +462,53 @@ I learned that when a pipeline drops data by design, the fix belongs with the co
 
 ---
 
+### 15. AI Index Recommendations: Right for the Query, Wrong for the Workload
+
+**Context**
+
+I was exploring how AI agents could help automate PostgreSQL performance optimization. Index recommendations are the example I use. An AI agent analyzes a slow query and recommends a composite or covering index. That can cut read latency a lot, but in a high-throughput database it also adds write amplification, and the agent can't see that from one query. On our clusters, with up to 50 cascading replicas, every extra byte of WAL is also shipped to and replayed on every replica.
+
+**Actions**
+
+I treat every AI recommendation as a hypothesis and test it against the whole workload, not just the query the AI saw. I check four things:
+
+1. **The read win is real:** `EXPLAIN ANALYZE` before and after.
+2. **The write cost is acceptable:** every insert and update must maintain every index, so WAL, I/O and storage all grow. I measure WAL bytes per statement in `pg_stat_statements` and overall in `pg_stat_wal`, plus the index's size.
+3. **HOT updates survive:** an update can skip index maintenance (a HOT update) only if no indexed column changes. Indexing a frequently updated column takes that away, so I track `n_tup_hot_upd` against `n_tup_upd` in `pg_stat_user_tables`.
+4. **It holds under a realistic read/write mix,** not just the single query: P95 reads, write throughput, WAL rate and replica lag.
+
+Then I ship it carefully. Where it fits, I prefer a partial or selective index that covers only the hot rows, and I roll it out to one cluster first as a canary before the rest.
+
+**Results**
+
+Validating the AI's recommended index showed the trade-off it couldn't see:
+
+| Metric | Before | After | Change |
+|---|---|---|---|
+| Read latency (P95) | 180 ms | 65 ms | **−64%** (2.8× faster) |
+| Insert throughput | 50K/sec | 35K/sec | **−30%** |
+| Update throughput | 30K/sec | 19K/sec | **−37%** |
+| WAL generation | 100 MB/min | 165 MB/min | **+65%** |
+| Storage | Baseline | +25% | **+25%** |
+
+Reads got almost 3× faster, but writes lost about a third of their throughput, and every replica has to replay 65% more WAL. Updates fell further than inserts, which is what losing HOT updates looks like [confirm with the HOT ratio before and after]. The index was right for one query and wrong for a write-heavy table. [What you shipped in the end, for example a partial index on just the hot rows, and its numbers.] It sits alongside the Kafka offset lesson (story 11) and IRIS's two-stage verification (story 5) in how I review AI-assisted changes.
+
+**Learnings**
+
+I learned that AI optimizes for the query it sees, not for the whole database workload. AI is good at finding optimization opportunities, but the engineering team remains accountable for the system-level impact. So the validation has to cover writes, WAL, HOT updates and replicas, not just the read that got faster.
+
+**Principles:** Treat AI output as a hypothesis, not an answer. AI finds the opportunities; engineers own the system-level impact.
+
+| Impact | Scope | Personal Contribution | Tech Complexity | Organizational Complexity |
+|---|---|---|---|---|
+| S | S | M | M | S |
+
+**Signals shown:** Ownership, Ambiguity, Growth, Communication
+
+**How to use it:** for "How do you validate AI output?" or "Tell me about an AI suggestion that was wrong or risky" (Q23). Strictly, it isn't a hallucination, which is made-up output; it's advice that's right for the query and wrong for the workload. If they want a real incident, pair it with story 11.
+
+---
+
 ## Leadership Principles (one-line takeaways)
 
 Don't recite these. After a story, land one as the takeaway, for example: "That's why I always look for the reversible middle option." Numbers are story numbers above.
@@ -491,6 +539,8 @@ Don't recite these. After a story, land one as the takeaway, for example: "That'
 | Growing people | **Coach the person, don't take over the work.** | Q11 (alt_pool) |
 | Growing people | **Work yourself out of the critical path.** | Q19, Q22 |
 | Growing people | **Feedback early, specific and private.** | Q3 |
+| Using AI | **Treat AI output as a hypothesis, not an answer.** | 11, 15, Q14, Q23 |
+| Using AI | **AI finds the opportunities; engineers own the system-level impact.** | 12, 15, Q23 |
 
 ---
 
@@ -517,6 +567,7 @@ Lead with these for a Principal / Sr. Staff loop, since they have org-wide scope
 - **Flagship:** Secret Scanner, Search modernization (Elasticsearch fork), IRIS, Maestro, Postgres & OS upgrade.
 - **Supporting (deep technical diagnosis):** Database Health Check; Outlook email telemetry loss (reframing a bug hunt into a dependency decision); FaultLine for AI-assisted SRE design (a prototype, so state its status honestly).
 - **Growth or failure examples only, not main answers:** Cosmos DB cost miss, Kafka offset revert, Rankie, Embeddings, VentSpout jitter. Their own scope ratings are S/M, so use each once.
+- **AI judgment:** story 15 (AI index recommendations) for "how do you validate AI output?", paired with story 11 (Kafka offsets) as the real incident.
 
 ## Gaps to Fill (real details only)
 
@@ -530,6 +581,7 @@ These are the gaps that make the answers read below Principal level. Fill each w
 - **Mentoring seniors:** Q11 now uses a real example (coaching a staff engineer to 100% alt_pool adoption); add the supporting numbers. One more real example is still needed for Q3 and Q12.
 - **Recency:** a date for each story. Prefer the last 0 to 3 years.
 - **After launch:** whether each project still runs, was expanded or was handed off.
+- **AI judgment (story 15):** where the before/after numbers were measured (load test or canary), what you shipped in the end and its numbers, and the HOT ratio before and after.
 
 ## Questions & Answers
 
@@ -557,6 +609,7 @@ Index:
 20. Give me an example of a tough or critical piece of feedback you received
 21. Give me an example of when you had to make an important decision and had to decide between moving forward or gathering more information
 22. What are you trying to improve most (professionally)
+23. How do you validate AI recommendations? / Tell me about a time an AI suggestion looked right but was wrong / How do you handle AI hallucinations?
 
 ### 1. Tell me about yourself (TMAY)
 
@@ -1402,6 +1455,49 @@ I'm still improving at this. The skill is deciding which constraints are firm, w
 
 > Q: Why does this matter at your level?
 > A: Scope grows faster than my time. If decisions depend on me, teams slow down, so the leverage comes from making good decisions easy for other people to make.
+
+---
+
+### 23. How do you validate AI recommendations? / Tell me about a time an AI suggestion looked right but was wrong / How do you handle AI hallucinations?
+
+**Answer**
+
+I treat AI output as a hypothesis, not an answer, because AI optimizes for the context it can see, not for the whole system.
+
+The example I use is PostgreSQL index recommendations, from exploring how AI agents could automate database performance tuning. An agent analyzing a slow query will often recommend a composite or covering index. That can cut read latency a lot. But in a high-throughput database, every index has a maintenance cost: each insert and update must maintain it, WAL volume and storage grow, and indexing a frequently updated column takes away HOT updates, so updates that used to skip the indexes now write to all of them. With up to 50 cascading replicas, that extra WAL is replayed on every replica. The AI saw one query. It didn't see the workload.
+
+So I validate against the whole workload. `EXPLAIN ANALYZE` confirms the read win. PostgreSQL statistics show the write cost: WAL bytes in `pg_stat_statements` and `pg_stat_wal`, and the HOT update ratio in `pg_stat_user_tables`. Then I run a realistic read/write workload test, not just the one query. Where it fits, I prefer a partial index on just the hot rows, and I roll it out to one cluster first as a canary.
+
+The numbers made the trade-off obvious. The AI's index cut P95 reads from 180 ms to 65 ms. But insert throughput fell from 50K to 35K per second, updates from 30K to 19K, WAL grew from 100 to 165 MB per minute, and storage grew 25%. Right for the query, wrong for a write-heavy table.
+
+I learned why this matters the hard way. FaultLine, the AI SRE tool I built, suggested batching Kafka offset commits. It was right in isolation, I applied it without validating downstream, and service teams got lag and 5xx alerts until I reverted it (story 11). My philosophy now: AI helps us discover optimization opportunities, but the engineering team stays accountable for the system-level impact.
+
+**Principles to land:** Treat AI output as a hypothesis, not an answer. AI finds the opportunities; engineers own the system-level impact.
+
+**Follow-up 1**
+
+> Q: Is that really a hallucination?
+> A: Not in the strict sense. A hallucination is made-up output, like a function or setting that doesn't exist, and running the code or checking the docs catches it fast. The index case is subtler: the advice is correct for the query and wrong for the workload. That's the more dangerous kind, because it passes a quick review.
+
+**Follow-up 2**
+
+> Q: What do HOT updates have to do with indexes?
+> A: A HOT (heap-only tuple) update writes the new row version on the same page and skips index maintenance, but only if no indexed column changed and the page has room. Index a frequently updated column and those updates can't be HOT anymore: every index gets a new entry, WAL grows, and bloat builds up. I compare `n_tup_hot_upd` with `n_tup_upd` to see it. Since PostgreSQL 16, columns covered only by BRIN indexes no longer block HOT.
+
+**Follow-up 3**
+
+> Q: How do you canary an index?
+> A: One cluster at a time, not one replica, because with physical replication an index built on the primary reaches every replica through WAL. I'd build it with `CREATE INDEX CONCURRENTLY` so writes aren't blocked, compare P95 reads, write throughput, WAL rate, HOT ratio and replica lag against the other clusters, and remove it with `DROP INDEX CONCURRENTLY` if writes suffer. A failed concurrent build leaves an invalid index that still costs writes, so check for one and drop it.
+
+**Follow-up 4**
+
+> Q: When would you accept the index anyway?
+> A: When the read path matters more and the measured write cost is acceptable: a read-heavy table, a rarely updated column, or a partial index over a small set of hot rows. I'd also look for an index it makes redundant. A composite index on `(a, b)` also serves queries on `a` alone, so replacing one index with another keeps the write cost flat.
+
+**Follow-up 5**
+
+> Q: Why did updates drop more than inserts (−37% vs. −30%)?
+> A: Every insert already maintains every index, so one more index adds a fixed cost to each insert. An update that was HOT maintained no indexes at all. If the new index covers a column the table updates often, those updates stop being HOT and now write to every index, so updates lose more. [Confirm with the HOT ratio before and after.]
 
 ---
 
