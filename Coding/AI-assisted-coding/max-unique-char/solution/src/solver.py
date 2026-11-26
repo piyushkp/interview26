@@ -13,6 +13,9 @@ class MaxUniqueSolver:
     def __init__(self, word_list: WordList):
         self.word_list = word_list
 
+    # AI prompt: "Solve this with branch-and-bound backtracking over bitmasks: use one word per bitmask so
+    #   anagrams count once, drop overlapping words after each pick, and cut a branch when the rest can't
+    #   beat the best. Match the brute force's total; greedy longest-first misses it."
     # Optimized: bitmask DFS over words that are still compatible, with an upper-bound prune.
     # Time O(2^u) worst case, far less in practice because each pick removes every overlapping word
     # and branches that can't beat the best are cut; Space O(u·A) for the candidate lists on the stack.
@@ -56,6 +59,9 @@ class MaxUniqueSolver:
         return [word_for_mask[m] for m in best["masks"]]
 
     # NEW: brute force kept so tests can compare it with the optimized solve.
+    # AI prompt: "Solve this with backtracking: for each word, try both skipping and taking it, but take it
+    #   only if it shares no character with the words picked so far. Return the group with the most unique
+    #   characters, or an empty list if there are no valid words; any best group is fine on a tie."
     # Brute force: try every subset with include/exclude recursion, checking pairwise compatibility.
     # Time O(2^n · n), Space O(n) recursion depth.
     def solve_brute_force(self) -> List[str]:

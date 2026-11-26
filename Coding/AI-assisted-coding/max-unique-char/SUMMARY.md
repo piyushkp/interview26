@@ -30,6 +30,13 @@ shared character ("abc" and "cde" share "c"). Use `== 0`.
 ## 3. Brute force
 **Algorithm:** backtracking, which tries taking or skipping each word.
 
+**AI prompt:**
+```text
+Solve this with backtracking: for each word, try both skipping and taking it, but take it only if it
+shares no character with the words picked so far. Return the group with the most unique characters, or
+an empty list if there are no valid words; any best group is fine on a tie.
+```
+
 **Data structures:**
 - list: the words I picked
 - set per word: its letters, to spot shared letters
@@ -57,6 +64,13 @@ including ones that can't beat the best found.
 
 ## 4. Optimal
 **Algorithm:** depth-first search with pruning, which goes deep on one choice and gives up early on paths that can't win.
+
+**AI prompt:**
+```text
+Solve this with branch-and-bound backtracking over bitmasks: use one word per bitmask so anagrams count
+once, drop overlapping words after each pick, and cut a branch when the rest can't beat the best. Match
+the brute force's total; greedy longest-first misses it.
+```
 
 **Data structures:**
 - bitmask per word: a number where each bit is one letter, so comparing two words is one step
@@ -110,7 +124,7 @@ solution; with the tests added, `./run.sh coverage` reports **100% line and bran
 `word_list.py` and `solver.py` (27 tests).
 
 **Gaps in the original tests, exposed by our implementation**
-- **`solve_brute_force` is never called** (`solver.py:62-78`), so nothing proves the optimized search finds the
+- **`solve_brute_force` is never called** (`solver.py:68-84`), so nothing proves the optimized search finds the
   true maximum. Covered by S9 (optimized == brute force on 300 random lists).
 - **Large lists only assert `>= 20`**, but the true maximum for the 300-word list is 22, so a search that stops at
   20 or 21 (e.g. an over-aggressive prune) would still pass. Covered by S9 (exact match with the brute force). Plain

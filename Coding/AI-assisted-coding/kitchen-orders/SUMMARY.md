@@ -18,6 +18,13 @@ No `????` tests in this problem.
 ## 3. Brute force
 **Algorithm:** try every order of dishes (brute force), and fill in each order greedily, which means each step takes the best choice right now and never goes back.
 
+**AI prompt:**
+```text
+Solve this by trying every order of the dishes and scheduling each one greedily: each step, in recipe
+order, goes to the chef who would finish it first. Return the schedule that finishes soonest, or an
+empty schedule if there are no dishes.
+```
+
 **Data structures:**
 - dictionary: when each chef is free next
 - dictionary: when each station is free next
@@ -46,6 +53,13 @@ Time **O(n!·S·C)**, space **O(S)**.
 
 ## 4. Optimal
 **Algorithm:** backtracking, which builds an order step by step and undoes choices to try others, with an early stop.
+
+**AI prompt:**
+```text
+Solve this with branch-and-bound backtracking: dishes of the same recipe are interchangeable, so only
+try distinct recipe sequences, schedule each greedily, and stop once one hits the lower bound. Match
+the brute force's makespan; an empty order gives an empty schedule.
+```
 
 **Data structures:**
 - dictionary: recipe → its dishes, so same dishes count as one choice
@@ -114,7 +128,7 @@ coverage** of `order.py` and `kitchen.py` (17 tests).
 
 **Gaps in the original tests, exposed by our implementation**
 - **No mixed DONE/PENDING order**, so Bug 1 passes every given test. Covered by O1.
-- **`schedule`, `schedule_brute_force`, `_simulate` and `_lower_bound` are never called** (`kitchen.py:24-114`):
+- **`schedule`, `schedule_brute_force`, `_simulate` and `_lower_bound` are never called** (`kitchen.py:27-120`):
   the only kitchen test checks the chef list. Covered by K1-K7, X1-X3.
 - **No validity check at all**: nothing verifies recipe order, chef-specific durations, or that no chef or station is
   double-booked. Covered by `assert_valid` on every schedule (K1-K7, X1).

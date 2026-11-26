@@ -23,6 +23,9 @@ class Checker:
         for word in dictionary:
             self.words_by_length[len(word)].append(word)
 
+    # AI prompt: "Solve this with pruned dynamic programming: only check words within max_distance of the
+    #   typo's length, stop each distance once a row passes max_distance, and keep the top k in a heap.
+    #   Match the brute force exactly, even for typos shorter than max_distance."
     # Optimized: only scan words within d of the query's length, and stop each distance early.
     # Time O(N_d·L·d) typical, O(N_d·L²) worst; Space O(C + L)
     def suggest(self, word: str, max_distance: int = 2, max_suggestions: int = 5) -> List[str]:
@@ -40,6 +43,9 @@ class Checker:
         return [candidate for _, _, candidate in heapq.nsmallest(max_suggestions, matches)]
 
     # NEW: brute force kept under a new name so tests can compare it with the optimized suggest.
+    # AI prompt: "Solve this with dynamic programming: compute the edit distance to every word, keep words
+    #   within max_distance, and sort by distance, then higher frequency, then A to Z. Return the first k,
+    #   or an empty list if k is zero or less or nothing matches."
     # Brute force: score the whole dictionary, then take the top k. Time O(N·L² + C log C), Space O(C)
     def suggest_brute_force(self, word: str, max_distance: int = 2, max_suggestions: int = 5) -> List[str]:
         if max_suggestions <= 0:

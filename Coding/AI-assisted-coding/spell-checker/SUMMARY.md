@@ -26,6 +26,13 @@ Negate frequency to sort it descending; add the word as a final key for stable t
 ## 3. Brute force
 **Algorithm:** check every word.
 
+**AI prompt:**
+```text
+Solve this with dynamic programming: compute the edit distance to every word, keep words within
+max_distance, and sort by distance, then higher frequency, then A to Z. Return the first k, or an empty
+list if k is zero or less or nothing matches.
+```
+
 **Data structures:**
 - grid: edit counts for one word at a time
 - list: the words that are close enough
@@ -48,6 +55,13 @@ Time **O(N·L² + C log C)**, space **O(L² + C)**. Bottleneck: the full DP for 
 
 ## 4. Optimal
 **Algorithm:** check only likely words, stop early, keep the top few with a heap.
+
+**AI prompt:**
+```text
+Solve this with pruned dynamic programming: only check words within max_distance of the typo's length,
+stop each distance once a row passes max_distance, and keep the top k in a heap. Match the brute force
+exactly, even for typos shorter than max_distance.
+```
 
 **Data structures:**
 - dictionary: word length → words, to jump to similar lengths

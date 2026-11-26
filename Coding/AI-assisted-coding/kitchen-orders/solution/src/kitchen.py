@@ -19,6 +19,9 @@ class Kitchen:
     def chefs(self) -> list[Chef]:
         return self._chefs
 
+    # AI prompt: "Solve this with branch-and-bound backtracking: dishes of the same recipe are
+    #   interchangeable, so only try distinct recipe sequences, schedule each greedily, and stop once one
+    #   hits the lower bound. Match the brute force's makespan; an empty order gives an empty schedule."
     # Optimized: search distinct recipe orderings only, and stop once a schedule hits the lower bound.
     # Time O(M·S·C) worst case, usually far less; Space O(S + n)
     def schedule(self, order: Order) -> Schedule:
@@ -59,6 +62,9 @@ class Kitchen:
         return best
 
     # NEW: brute force kept so tests can compare it with the optimized schedule.
+    # AI prompt: "Solve this by trying every order of the dishes and scheduling each one greedily: each step,
+    #   in recipe order, goes to the chef who would finish it first. Return the schedule that finishes
+    #   soonest, or an empty schedule if there are no dishes."
     # Brute force: simulate every ordering of the dishes. Time O(n!·S·C), Space O(S)
     def schedule_brute_force(self, order: Order) -> Schedule:
         best = Schedule([])
